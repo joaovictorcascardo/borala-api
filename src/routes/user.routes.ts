@@ -1,18 +1,17 @@
-import { Router } from "express";
+import { Router } from 'express';
 
-const userController = {
-  create: (request: any, response: any) => {
-    return response.json({ message: "Usuário seria criado aqui!" });
-  },
-};
+import UserController from '../controllers/UserController';
 
-const userValidationMiddleware = (request: any, response: any, next: any) => {
-  console.log("Validação passaria aqui!");
-  next();
-};
+import { validate } from '../middlewares/validation.middleware';
+
+import { UserValidator } from '../validators/UserValidator';
 
 const userRoutes = Router();
 
-userRoutes.post("/", userValidationMiddleware, userController.create);
+userRoutes.post(
+    '/',                         
+    validate(UserValidator.createUser), 
+    UserController.create             
+);
 
 export { userRoutes };
