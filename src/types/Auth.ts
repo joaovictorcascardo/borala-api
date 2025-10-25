@@ -5,3 +5,8 @@ export interface AuthenticatedRequest extends Request {
     id: number;
   };
 }
+export interface TokenPayload {
+    iat: number;
+    exp: number;
+    userId: string;
+}
