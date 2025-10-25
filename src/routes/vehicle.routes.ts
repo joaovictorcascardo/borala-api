@@ -6,6 +6,8 @@ import { VehicleValidator } from "../validators/VehicleValidator";
 
 const vehicleRoutes = Router();
 
+vehicleRoutes.get("/", authMiddleware, VehicleController.list);
+
 vehicleRoutes.post(
   "/",
   authMiddleware,

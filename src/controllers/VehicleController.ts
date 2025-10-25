@@ -50,6 +50,24 @@ class VehicleController {
         .json({ error: "Ocorreu um erro interno ao cadastrar o veículo." });
     }
   }
+
+  async list(
+    request: AuthenticatedRequest,
+    response: Response
+  ): Promise<Response> {
+    try {
+      const userId = request.user!.id;
+
+      const vehicles = await VehicleService.FindByUserId(userId);
+
+      return response.status(200).json(vehicles);
+    } catch (error: any) {
+      console.error("Erro ao listar veículos:", error);
+      return response
+        .status(500)
+        .json({ error: "Ocorreu um erro interno ao listar os veículos." });
+    }
+  }
 }
 
 export default new VehicleController();
