@@ -33,6 +33,21 @@ class VehicleService {
 
     return newVehicle;
   }
+  async FindByUserId(userId: number) {
+    const UserVehicles = await db("vehicles")
+      .where({ user_id: userId })
+      .select(
+        "id",
+        "brand",
+        "model",
+        "color",
+        "license_plate",
+        "year",
+        "seats"
+      );
+
+    return UserVehicles;
+  }
 }
 
 export default new VehicleService();
