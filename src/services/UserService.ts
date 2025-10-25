@@ -15,7 +15,7 @@ class UserService {
     delete user.password_reset_expires;
     return user as UserWithoutPassword;
   }
-  async create({ name, email, password, birth_date, phone }: CreateUserDTO) {
+  async create({ name, email, password, birth_date, phone }: CreateUserDTO): Promise<UserWithoutPassword>{
     const existingUser = await db("users").where({ email }).first();
 
     if (existingUser) {
@@ -36,10 +36,12 @@ class UserService {
       .returning("*");
 
     delete user.password_hash;
+    delete user.password_reset_token;
+    delete user.password_reset_expires;
 
-    return user;
+    return user as UserWithoutPassword;
   }
-  async updateMe (id: number, data: UpdateUserDTO){
+  async updateMe(id: number, data: UpdateUserDTO): Promise<UserWithoutPassword>{
     await db('users').where({ id: id }).update(data);
     const updatedUser = await this.findById(id);
     return updatedUser;
