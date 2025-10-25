@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import VehicleService from "../services/VehicleService";
 import {AuthenticatedRequest} from "../types/Auth";
 

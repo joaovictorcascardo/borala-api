@@ -23,3 +23,13 @@ export interface UpdateUserDTO {
     phone: string | null;
     bio: string | null;
 }
+export interface UserWithoutPassword {
+    id: number;
+    name: string;
+    email: string;
+    birth_date: Date;
+    phone: string | null;
+    role: string;
+    created_at: Date;
+    updated_at: Date;
+}

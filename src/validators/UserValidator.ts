@@ -10,16 +10,16 @@ const createUser = z.object({
       .string()
       .min(6, { message: "A senha precisa ter no mínimo 6 caracteres." }),
     birth_date: z.string().transform((date) => new Date(date)),
-    phone: z.number().int().positive().nullable(),
+    phone: z.number().int().positive(),
   }),
 });
-/*const updateUser = z.object({
+const updateUser = z.object({
   body: z.object({
     name: z.string({message: "Precisa ser letras"}).min(3, { message: 'O nome precisa ter no mínimo 3 caracteres.' }),
-    phone: z.number().int().positive().nullable(),
-    bio: z.string().max(100, { message: 'limite de caracteres: 100'}),
+    phone: z.number().int().positive(),
+    bio: z.string().max(100, { message: 'limite de caracteres: 100'}).nullable(),
   })
-})*/
+})
 export const UserValidator = {
-  createUser, //updateUser,
+  createUser, updateUser,
 };

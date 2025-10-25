@@ -1,8 +1,20 @@
 import bcrypt from "bcryptjs";
 import { db } from "../database/connection";
 import {CreateUserDTO} from "../types/User";
+import {UpdateUserDTO} from "../types/User";
+import {UserWithoutPassword} from "../types/User";
 
 class UserService {
+  async findById(id: number): Promise <UserWithoutPassword> {
+    const user = await db('users').where({ id }).first();
+    if (!user) {
+      throw new Error("Usuário não encontrado.");
+    }
+    delete user.password_hash;
+    delete user.password_reset_token;
+    delete user.password_reset_expires;
+    return user as UserWithoutPassword;
+  }
   async create({ name, email, password, birth_date, phone }: CreateUserDTO) {
     const existingUser = await db("users").where({ email }).first();
 
@@ -27,6 +39,12 @@ class UserService {
 
     return user;
   }
+  async updateMe (id: number, data: UpdateUserDTO){
+    await db('users').where({ id: id }).update(data);
+    const updatedUser = await this.findById(id);
+    return updatedUser;
+  }
+  
 }
 
 export default new UserService();

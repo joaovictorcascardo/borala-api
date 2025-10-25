@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import {AuthenticatedRequest} from "../types/Auth";
 import { TokenPayload } from "../types/Auth";
@@ -14,9 +14,7 @@ export function authMiddleware(
 
   if (!authHeader) {
     console.log("AuthMiddleware: Falha - Cabeçalho Authorization ausente.");
-    response
-      .status(401)
-      .json({ error: "Token de autenticação não fornecido." });
+    response.status(401).json({ error: "Token de autenticação não fornecido." });
     return;
   }
 

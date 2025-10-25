@@ -2,16 +2,9 @@ import { db } from "../database/connection";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { LoginDTO } from "../types/Auth";
+import { ResetPasswordDTO } from "../types/Auth";
 
-interface LoginDTO {
-  email: string;
-  password: string;
-}
-interface ResetPasswordDTO {
-  token: string;
-  password: string;
-  password_confirmation: string;
-}
 class AuthService {
   public async login({ email, password }: LoginDTO) {
     const user = await db("users").where({ email }).first();
