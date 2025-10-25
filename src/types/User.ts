@@ -10,6 +10,7 @@ export interface User {
     name: string;
     email: string;
     password_hash: string;
+    average_rating: number;
     birth_date: Date;
     phone: string | null;
     role: string;
@@ -27,9 +28,19 @@ export interface UserWithoutPassword {
     id: number;
     name: string;
     email: string;
+    average_rating: number;
     birth_date: Date;
     phone: string | null;
     role: string;
     created_at: Date;
     updated_at: Date;
+}
+export interface UserGetMe{
+    id: number;
+    name: string;
+    email: string;
+    phone: string | null;
+    bio: string;
+    birth_date: Date;
+    average_rating: number;
 }

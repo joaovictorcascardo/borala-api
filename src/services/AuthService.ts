@@ -33,7 +33,7 @@ class AuthService {
         ` O e-mail informado não possui cadastro no Borala: ${email}`
       );
     }
-    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetToken = crypto.randomBytes(32).toString("hex"); 
     const tokenHash = crypto
       .createHash("sha256")
       .update(resetToken)
