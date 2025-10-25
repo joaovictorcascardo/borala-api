@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import {AuthenticatedRequest} from "../types/Auth";
 
 interface TokenPayload {
   iat: number;
@@ -7,11 +8,6 @@ interface TokenPayload {
   userId: string;
 }
 
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: number;
-  };
-}
 
 export function authMiddleware(
   request: AuthenticatedRequest,

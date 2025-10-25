@@ -1,14 +1,5 @@
 import { db } from "../database/connection";
-
-interface CreateVehicleDTO {
-  brand: string;
-  model: string;
-  color: string;
-  license_plate: string;
-  year: number;
-  seats: number;
-  userId: number;
-}
+import {CreateVehicleDTO} from "../types/Vehicle";
 
 class VehicleService {
   async create({

@@ -1,11 +1,6 @@
 import { Request, Response } from "express";
 import VehicleService from "../services/VehicleService";
-
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: number;
-  };
-}
+import {AuthenticatedRequest} from "../types/Auth";
 
 class VehicleController {
   async create(

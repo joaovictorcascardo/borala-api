@@ -1,13 +1,6 @@
 import bcrypt from "bcryptjs";
 import { db } from "../database/connection";
-
-interface CreateUserDTO {
-  name: string;
-  email: string;
-  password: string;
-  birth_date: Date;
-  phone?: string;
-}
+import {CreateUserDTO} from "../types/User";
 
 class UserService {
   async create({ name, email, password, birth_date, phone }: CreateUserDTO) {
