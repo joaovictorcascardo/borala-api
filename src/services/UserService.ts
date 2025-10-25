@@ -6,10 +6,11 @@ interface CreateUserDTO {
     email: string;
     password: string;
     birth_date: Date;
+    phone?: string; 
 }
 
 class UserService {
-    async create({ name, email, password, birth_date }: CreateUserDTO) {
+    async create({ name, email, password, birth_date, phone }: CreateUserDTO) {
         const existingUser = await db('users').where({ email }).first();
 
         if (existingUser) {
@@ -24,6 +25,7 @@ class UserService {
                 email,
                 password_hash, 
                 birth_date,
+                phone,
                 role: 'USER'
             })
             .returning('*'); 

@@ -4,13 +4,13 @@ import UserService from "../services/UserService";
 class UserController {
   async create(request: Request, response: Response): Promise<Response> {
     try {
-      const { name, email, password, birth_date } = request.body;
+      const { name, email, password, birth_date, phone } = request.body;
 
       const user = await UserService.create({
         name,
         email,
         password,
-
+        phone,
         birth_date: new Date(birth_date),
       });
 
