@@ -1,40 +1,39 @@
-import bcrypt from 'bcryptjs';
-import { db } from '../database/connection';
+import bcrypt from "bcryptjs";
+import { db } from "../database/connection";
 
 interface CreateUserDTO {
-    name: string;
-    email: string;
-    password: string;
-    birth_date: Date;
-    phone?: string; 
+  name: string;
+  email: string;
+  password: string;
+  birth_date: Date;
+  phone?: string;
 }
 
 class UserService {
-    async create({ name, email, password, birth_date, phone }: CreateUserDTO) {
-        const existingUser = await db('users').where({ email }).first();
+  async create({ name, email, password, birth_date, phone }: CreateUserDTO) {
+    const existingUser = await db("users").where({ email }).first();
 
-        if (existingUser) {
-            throw new Error('Este e-mail já está em uso.');
-        }
-
-        const password_hash = await bcrypt.hash(password, 10);
-
-        const [user] = await db('users')
-            .insert({
-                name,
-                email,
-                password_hash, 
-                birth_date,
-                phone,
-                role: 'USER'
-            })
-            .returning('*'); 
-        
-        delete user.password_hash;
-
-        return user;
+    if (existingUser) {
+      throw new Error("Este e-mail já está em uso.");
     }
 
+    const password_hash = await bcrypt.hash(password, 10);
+
+    const [user] = await db("users")
+      .insert({
+        name,
+        email,
+        password_hash,
+        birth_date,
+        phone,
+        role: "USER",
+      })
+      .returning("*");
+
+    delete user.password_hash;
+
+    return user;
+  }
 }
 
 export default new UserService();

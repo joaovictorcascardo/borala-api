@@ -13,4 +13,3 @@ export async function down(knex: Knex): Promise<void> {
     table.decimal("price_per_seat", 10, 2).notNullable().defaultTo(0.0);
   });
 }
-    
