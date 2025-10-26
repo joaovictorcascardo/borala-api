@@ -4,6 +4,8 @@ import {CreateUserDTO} from "../types/User";
 import {UpdateUserDTO} from "../types/User";
 import {UserWithoutPassword} from "../types/User";
 import { UserGetMe } from "../types/User";
+import { PublicUserProfile } from "../types/User";
+
 class UserService {
   async findById(id: number): Promise <UserWithoutPassword> {
     const user = await db('users').where({ id }).first();
@@ -14,6 +16,14 @@ class UserService {
     delete user.password_reset_token;
     delete user.password_reset_expires;
     return user as UserWithoutPassword;
+  }
+
+  async findPublicUserById(id: number): Promise<PublicUserProfile>{
+    const user = await db('users').select('id','name','profile_picture_url','bio','average_rating').where({ id }).first();
+    if(!user){
+      throw new Error("Usuário não encontrado.");
+    }
+    return user as PublicUserProfile
   }
 
   async findMe(id: number): Promise<UserGetMe> {

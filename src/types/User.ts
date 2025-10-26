@@ -9,10 +9,12 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    bio: string;
     password_hash: string;
     average_rating: number;
     birth_date: Date;
     phone: string | null;
+    profile_picture_url: string;
     role: string;
     created_at: Date;
     updated_at: Date;
@@ -43,4 +45,11 @@ export interface UserGetMe{
     bio: string;
     birth_date: Date;
     average_rating: number;
+}
+export interface PublicUserProfile {
+    id: number; 
+    name: string;
+    profile_picture_url: string | null;
+    bio: string | null;     
+    average_rating: number | null;    
 }
