@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import UserService from "../services/UserService";
-import { UpdateUserDTO } from "../types/User";
-import { CreateUserDTO } from "../types/User";
+import { UpdateUserDTO } from "../dto/UserDTO";
+import { CreateUserDTO } from "../dto/UserDTO";
 import {AuthenticatedRequest} from "../types/Auth";
 
 class UserController {
@@ -49,15 +49,9 @@ class UserController {
   async getUserById(req: Request, res: Response): Promise<Response> {
     try{
       const userId = Number(req.params.id);
-      if(isNaN(userId) || userId < 1){
-        throw new Error("O campo Id deve ser um número válido e maior que 0.");
-      }
       const foundUser = await UserService.findPublicUserById(userId);
       return res.status(200).json(foundUser);
     } catch (error: any){
-      if (error.message === "O campo Id deve ser um número válido e maior que 0.") {
-        return res.status(404).json({ error: error.message });
-      }
       if (error.message === "Usuário não encontrado."){
         return res.status(404).json({ error: error.message });
       }

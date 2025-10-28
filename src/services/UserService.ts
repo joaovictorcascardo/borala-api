@@ -1,13 +1,13 @@
 import bcrypt from "bcryptjs";
 import { db } from "../database/connection";
-import {CreateUserDTO} from "../types/User";
-import {UpdateUserDTO} from "../types/User";
-import {UserWithoutPassword} from "../types/User";
-import { UserGetMe } from "../types/User";
-import { PublicUserProfile } from "../types/User";
+import {CreateUserDTO} from "../dto/UserDTO";
+import { UpdateUserDTO } from "../dto/UserDTO";
+import { UserWithoutPasswordDTO } from "../dto/UserDTO";
+import { UserGetMeDTO } from "../dto/UserDTO";
+import { PublicUserProfileDTO } from "../dto/UserDTO";
 
 class UserService {
-  async findById(id: number): Promise <UserWithoutPassword> {
+  async findById(id: number): Promise <UserWithoutPasswordDTO> {
     const user = await db('users').where({ id }).first();
     if (!user) {
       throw new Error("Usuário não encontrado.");
@@ -15,18 +15,18 @@ class UserService {
     delete user.password_hash;
     delete user.password_reset_token;
     delete user.password_reset_expires;
-    return user as UserWithoutPassword;
+    return user as UserWithoutPasswordDTO;
   }
 
-  async findPublicUserById(id: number): Promise<PublicUserProfile>{
+  async findPublicUserById(id: number): Promise<PublicUserProfileDTO>{
     const user = await db('users').select('id','name','profile_picture_url','bio','average_rating').where({ id }).first();
     if(!user){
       throw new Error("Usuário não encontrado.");
     }
-    return user as PublicUserProfile
+    return user as PublicUserProfileDTO
   }
 
-  async findMe(id: number): Promise<UserGetMe> {
+  async findMe(id: number): Promise<UserGetMeDTO> {
     const user = await db('users').where({ id }).first();
     if (!user) {
       throw new Error("Usuário não encontrado.");
@@ -37,10 +37,10 @@ class UserService {
     delete user.created_at;
     delete user.updated_at;
     delete user.role;
-    return user as UserGetMe;
+    return user as UserGetMeDTO;
   }
   
-  async create({ name, email, password, birth_date, phone }: CreateUserDTO): Promise<UserWithoutPassword>{
+  async create({ name, email, password, birth_date, phone }: CreateUserDTO): Promise<UserWithoutPasswordDTO>{
     const existingUser = await db("users").where({ email }).first();
 
     if (existingUser) {
@@ -64,9 +64,9 @@ class UserService {
     delete user.password_reset_token;
     delete user.password_reset_expires;
 
-    return user as UserWithoutPassword;
+    return user as UserWithoutPasswordDTO;
   }
-  async updateMe(id: number, data: UpdateUserDTO): Promise<UserWithoutPassword>{
+  async updateMe(id: number, data: UpdateUserDTO): Promise<UserWithoutPasswordDTO>{
     await db('users').where({ id: id }).update(data);
     const updatedUser = await this.findById(id);
     return updatedUser;

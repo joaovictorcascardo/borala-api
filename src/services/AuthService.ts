@@ -1,9 +1,10 @@
 import { db } from "../database/connection";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
+import { StringValue } from 'ms';
 import crypto from "crypto";
-import { LoginDTO } from "../types/Auth";
-import { ResetPasswordDTO } from "../types/Auth";
+import { LoginDTO } from "../dto/AuthDTO";
+import { ResetPasswordDTO } from "../dto/AuthDTO";
 
 class AuthService {
   public async login({ email, password }: LoginDTO) {
@@ -19,10 +20,11 @@ class AuthService {
       throw new Error("E-mail ou senha inválidos.");
     }
     const secret = process.env.JWT_SECRET;
-
-    const token = jwt.sign({ userId: user.id }, secret as string, {
-      expiresIn: "1d",
-    });
+    const expire: StringValue = process.env.JWT_EXPIRES_IN as StringValue ;
+    if (!secret || !expire) {
+      throw new Error("JWT_SECRET ou JWT_EXPIRES_IN não definidos nas variáveis de ambiente.");
+    }
+    const token = jwt.sign({ userId: user.id }, secret as string, { expiresIn: expire });
     const { password_hash, ...userWithoutPassword } = user;
     return { user: userWithoutPassword, token: token };
   }

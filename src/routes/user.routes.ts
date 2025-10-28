@@ -8,7 +8,7 @@ const userRoutes = Router();
 
 userRoutes.post("/", validate(UserValidator.createUser), UserController.create);
 userRoutes.use(authMiddleware);
-userRoutes.get("/:id", UserController.getUserById);
+userRoutes.get("/:id", validate(UserValidator.getUserById), UserController.getUserById);
 userRoutes.get("/me", UserController.getMe);
 userRoutes.put("/me", validate(UserValidator.updateUser),UserController.updateMe);
 
