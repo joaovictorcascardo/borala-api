@@ -42,7 +42,6 @@ export function authMiddleware(
 
     const decoded = jwt.verify(token, secret);
     const userId = (decoded as TokenPayload).userId;
-    console.log("AuthMiddleware: Token decodificado com sucesso.");
 
     if (!userId) {
       console.error(
@@ -51,6 +50,8 @@ export function authMiddleware(
       throw new Error("Token inválido - payload incorreto.");
     }
 
+    console.log("AuthMiddleware: Token decodificado com sucesso.");
+    
     request.user = { id: Number(userId) };
     console.log(
       "AuthMiddleware: ID do usuário anexado à requisição:",
