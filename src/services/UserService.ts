@@ -84,7 +84,6 @@ class UserService {
       const oldAvatarFilePath = path.join(uploadConfig.directory, oldAvatarFilename);
       await fs.stat(oldAvatarFilePath);
       await fs.unlink(oldAvatarFilePath);
-      console.log(`[UserService] Avatar antigo deletado: ${oldAvatarFilename}`);
       const profilePictureUrl = `http://localhost:3333/files/${AvatarName}`;
       await db("users").where({ id: id }).update({profile_picture_url: profilePictureUrl});
       return this.findById(id);
