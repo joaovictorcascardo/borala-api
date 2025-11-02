@@ -5,6 +5,9 @@ import { UpdateUserDTO } from "../dto/UserDTO";
 import { UserWithoutPasswordDTO } from "../dto/UserDTO";
 import { UserGetMeDTO } from "../dto/UserDTO";
 import { PublicUserProfileDTO } from "../dto/UserDTO";
+import path from 'path'; 
+import fs from 'fs/promises';
+import uploadConfig from '../upload-images/upload';
 
 class UserService {
   async findById(id: number): Promise <UserWithoutPasswordDTO> {
@@ -71,7 +74,25 @@ class UserService {
     const updatedUser = await this.findById(id);
     return updatedUser;
   }
-  
+  async updateAvatar(id: number, AvatarName: string): Promise<UserWithoutPasswordDTO>{
+    const user = await db('users').where({ id }).first();
+    if (!user) {
+      throw new Error("Usuário não encontrado.");
+    }
+    if (user.profile_picture_url) {
+      const oldAvatarFilename = path.basename(user.profile_picture_url);
+      const oldAvatarFilePath = path.join(uploadConfig.directory, oldAvatarFilename);
+      await fs.stat(oldAvatarFilePath);
+      await fs.unlink(oldAvatarFilePath);
+      console.log(`[UserService] Avatar antigo deletado: ${oldAvatarFilename}`);
+      const profilePictureUrl = `http://localhost:3333/files/${AvatarName}`;
+      await db("users").where({ id: id }).update({profile_picture_url: profilePictureUrl});
+      return this.findById(id);
+    }
+    const profilePictureUrl = `http://localhost:3333/files/${AvatarName}`;
+    await db('users').where({ id: id }).update({profile_picture_url: profilePictureUrl});
+    return this.findById(id);
+  }
 }
 
 export default new UserService();

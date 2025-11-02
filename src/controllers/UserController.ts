@@ -58,6 +58,22 @@ class UserController {
       return res.status(500).json({ error: "Ocorreu um erro interno ao criar o usuário." });
     }
   }
+  async changeAvatar(req: AuthenticatedRequest, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Usuário não autenticado." });
+      }
+      const userId = req.user.id;
+      if (!req.file) {
+        return res.status(400).json({ error: 'Arquivo não enviado no campo "file".' });
+      }
+      const avatarFilename = req.file.filename;
+      const updatedUser = await UserService.updateAvatar(userId, avatarFilename);
+      return res.status(200).json(updatedUser);
+    } catch (error: any) {
+      return res.status(500).json({ error: "Ocorreu um erro interno ao atualizar o avatar." });
+    }
+  }
 }
 
 export default new UserController();
