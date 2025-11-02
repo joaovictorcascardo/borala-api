@@ -42,20 +42,20 @@ export function authMiddleware(
 
     const decoded = jwt.verify(token, secret);
     const userId = (decoded as TokenPayload).userId;
-
-    if (!userId) {
+    const userRole = (decoded as TokenPayload).role;
+    if (!userId || !userRole) {
       console.error(
-        "AuthMiddleware: Falha - ID do usuário (sub/userId) não encontrado no payload do token."
+        "AuthMiddleware: Falha - ID do usuário (sub/userId) e/ou Role não encontrados no payload do token."
       );
       throw new Error("Token inválido - payload incorreto.");
     }
 
     console.log("AuthMiddleware: Token decodificado com sucesso.");
     
-    request.user = { id: Number(userId) };
+    request.user = { id: Number(userId), role: String(userRole)};
     console.log(
       "AuthMiddleware: ID do usuário anexado à requisição:",
-      request.user.id
+      request.user.id, "; Role: ", request.user.role
     );
 
     return next();

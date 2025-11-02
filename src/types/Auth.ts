@@ -3,19 +3,12 @@ import { Request } from 'express';
 export interface AuthenticatedRequest extends Request {
   user?: {
     id: number;
+    role: string;
   };
 }
 export interface TokenPayload {
-    iat: number;
-    exp: number;
-    userId: string;
+  iat: number;
+  exp: number;
+  userId: string;
+  role: string;
 }
-export interface LoginDTO {
-    email: string;
-    password: string;
-  }
-export interface ResetPasswordDTO {
-    token: string;
-    password: string;
-    password_confirmation: string;
-  }

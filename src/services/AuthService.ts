@@ -24,7 +24,7 @@ class AuthService {
     if (!secret || !expire) {
       throw new Error("JWT_SECRET ou JWT_EXPIRES_IN não definidos nas variáveis de ambiente.");
     }
-    const token = jwt.sign({ userId: user.id }, secret as string, { expiresIn: expire });
+    const token = jwt.sign({ userId: user.id, role: user.role }, secret as string, { expiresIn: expire });
     const { password_hash, ...userWithoutPassword } = user;
     return { user: userWithoutPassword, token: token };
   }
