@@ -44,12 +44,12 @@ class UserController {
         return res.status(401).json({ error: "Usuário não autenticado." });
       }
       const userId = req.user.id;
-      const userMe = await UserService.findMe(userId);
+      const userMe = await UserService.findById(userId);
       return res.status(200).json(userMe);
     } catch (error: any) {
       return res
         .status(500)
-        .json({ error: "Ocorreu um erro interno ao atualizar o usuário." });
+        .json({ error: "Ocorreu um erro interno ao buscar o usuário." });
     }
   }
   async getUserById(req: Request, res: Response): Promise<Response> {
