@@ -1,7 +1,8 @@
-import { db } from "../database/connection";
-import {CreateVehicleDTO} from "../types/Vehicle";
+import {CreateVehicleDTO} from "../dto/VehicleDTO";
+import { VehicleData } from "../data/Vehicle.Data"
 
-class VehicleService {
+export class VehicleService {
+  vehicleData = new VehicleData();
   async create({
     brand,
     model,
@@ -11,41 +12,13 @@ class VehicleService {
     seats,
     userId,
   }: CreateVehicleDTO) {
-    const existingVehicle = await db("vehicles")
-      .where({ license_plate })
-      .first();
-
-    if (existingVehicle) {
-      throw new Error("Veículo com esta placa já cadastrado.");
-    }
-
-    const [newVehicle] = await db("vehicles")
-      .insert({
-        brand,
-        model,
-        color,
-        license_plate,
-        year,
-        seats,
-        user_id: userId,
-      })
-      .returning("*");
-
+    await this.vehicleData.existingVehicle(license_plate);
+    const newVehicle = await this.vehicleData.createVehicle({brand, model, color, license_plate, year, seats, userId});
     return newVehicle;
   }
-  async FindByUserId(userId: number) {
-    const UserVehicles = await db("vehicles")
-      .where({ user_id: userId })
-      .select(
-        "id",
-        "brand",
-        "model",
-        "color",
-        "license_plate",
-        "year",
-        "seats"
-      );
 
+  async FindByUserId(userId: number) {
+    const UserVehicles = await this.vehicleData.FindByUserId(userId);
     return UserVehicles;
   }
 }
