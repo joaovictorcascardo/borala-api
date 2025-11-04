@@ -1,6 +1,6 @@
 import { Response } from "express";
-import VehicleService from "../services/VehicleService";
-import {AuthenticatedRequest} from "../types/Auth";
+import VehicleService from "../services/Vehicle.Service";
+import { AuthenticatedRequest } from "../types/Auth";
 
 class VehicleController {
   async create(

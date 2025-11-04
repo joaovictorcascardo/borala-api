@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import UserService from "../services/UserService";
+import UserService from "../services/User.Service";
 import { UpdateUserDTO } from "../dto/UserDTO";
 import { CreateUserDTO } from "../dto/UserDTO";
-import {AuthenticatedRequest} from "../types/Auth";
+import { AuthenticatedRequest } from "../types/Auth";
 
 class UserController {
   async create(req: Request, res: Response): Promise<Response> {
@@ -17,11 +17,13 @@ class UserController {
         return res.status(409).json({ error: error.message });
       }
       console.error(error);
-      return res.status(500).json({ error: "Ocorreu um erro interno ao criar o usuário." });
+      return res
+        .status(500)
+        .json({ error: "Ocorreu um erro interno ao criar o usuário." });
     }
   }
   async updateMe(req: AuthenticatedRequest, res: Response): Promise<Response> {
-    try{
+    try {
       if (!req.user) {
         return res.status(401).json({ error: "Usuário não autenticado." });
       }
@@ -30,32 +32,38 @@ class UserController {
       const dataToUpdate: UpdateUserDTO = req.body;
       const updatedUser = await UserService.updateMe(userId, dataToUpdate);
       return res.status(200).json(updatedUser);
-    }catch(error: any){
-      return res.status(500).json({ error: "Ocorreu um erro interno ao atualizar o usuário." });
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ error: "Ocorreu um erro interno ao atualizar o usuário." });
     }
   }
   async getMe(req: AuthenticatedRequest, res: Response): Promise<Response> {
-    try{
+    try {
       if (!req.user) {
         return res.status(401).json({ error: "Usuário não autenticado." });
       }
       const userId = req.user.id;
       const userMe = await UserService.findMe(userId);
       return res.status(200).json(userMe);
-    } catch (error: any){
-      return res.status(500).json({ error: "Ocorreu um erro interno ao atualizar o usuário." });
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ error: "Ocorreu um erro interno ao atualizar o usuário." });
     }
   }
   async getUserById(req: Request, res: Response): Promise<Response> {
-    try{
+    try {
       const userId = Number(req.params.id);
       const foundUser = await UserService.findPublicUserById(userId);
       return res.status(200).json(foundUser);
-    } catch (error: any){
-      if (error.message === "Usuário não encontrado."){
+    } catch (error: any) {
+      if (error.message === "Usuário não encontrado.") {
         return res.status(404).json({ error: error.message });
       }
-      return res.status(500).json({ error: "Ocorreu um erro interno ao criar o usuário." });
+      return res
+        .status(500)
+        .json({ error: "Ocorreu um erro interno ao criar o usuário." });
     }
   }
   async changeAvatar(req: AuthenticatedRequest, res: Response) {
@@ -65,13 +73,20 @@ class UserController {
       }
       const userId = req.user.id;
       if (!req.file) {
-        return res.status(400).json({ error: 'Arquivo não enviado no campo "file".' });
+        return res
+          .status(400)
+          .json({ error: 'Arquivo não enviado no campo "file".' });
       }
       const avatarFilename = req.file.filename;
-      const updatedUser = await UserService.updateAvatar(userId, avatarFilename);
+      const updatedUser = await UserService.updateAvatar(
+        userId,
+        avatarFilename
+      );
       return res.status(200).json(updatedUser);
     } catch (error: any) {
-      return res.status(500).json({ error: "Ocorreu um erro interno ao atualizar o avatar." });
+      return res
+        .status(500)
+        .json({ error: "Ocorreu um erro interno ao atualizar o avatar." });
     }
   }
 }

@@ -1,20 +1,14 @@
 import { Response } from "express";
 import { AuthenticatedRequest } from "../types/Auth";
 import { CreateRideDTO } from "../dto/RideDTO";
-import RideService from "../services/RideService";
-
-interface CreateRideRequest extends AuthenticatedRequest {
-  body: CreateRideDTO;
-}
+import RideService from "../services/Ride.Service";
 
 class RideController {
   async create(req: AuthenticatedRequest, res: Response): Promise<Response> {
-    const request = req as CreateRideRequest;
-
     try {
-      const driverId = request.user!.id;
+      const driverId = req.user!.id;
 
-      const rideData = request.body;
+      const rideData = req.body as CreateRideDTO;
 
       const newRide = await RideService.create(driverId, rideData);
 
@@ -33,5 +27,4 @@ class RideController {
     }
   }
 }
-
 export default new RideController();
