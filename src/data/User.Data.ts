@@ -38,7 +38,7 @@ export class UserData{
             throw new Error(error.message);
         }
     }
-    async existingUser({ name, email, password, birth_date, phone }: CreateUserDTO): Promise<null>{
+    async existingUser(email: string): Promise<null>{
         try{
             const verifyEmail = await db("users").where({ email }).first();
             if (verifyEmail) {

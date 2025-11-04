@@ -19,7 +19,7 @@ class UserService {
   }
 
   async create({ name, email, password, birth_date, phone }: CreateUserDTO): Promise<UserWithoutPasswordDTO>{
-    await this.userData.existingUser({name, email, password, birth_date, phone}); 
+    await this.userData.existingUser(email); 
     const password_hash = await bcrypt.hash(password, 10);
 
     const user = await this.userData.createUser(name, email, password_hash, birth_date, phone)
