@@ -1,5 +1,6 @@
 import { db } from "../database/connection";
-import { CreateUserDTO } from "../dto/UserDTO";
+import bcrypt from "bcryptjs";
+import { User } from "../types/User";
 import { UpdateUserDTO } from "../dto/UserDTO";
 import { UserWithoutPasswordDTO } from "../dto/UserDTO";
 import { UserGetMeDTO } from "../dto/UserDTO";
@@ -49,6 +50,35 @@ export class UserData{
             throw new Error(error.message);            
         }
     }
+    async login(email: string, password: string): Promise<User>{
+        try{
+            const user = await db("users").where({ email }).first();
+            if(!user){
+                throw new Error("E-mail ou senha inválidos."); 
+            }
+            const isPasswordCorrect = await bcrypt.compare(
+                password,
+                user.password_hash
+            );
+            if (!isPasswordCorrect) {
+                throw new Error("E-mail ou senha inválidos.");
+            }
+            return user;
+        }catch(error: any){
+            throw new Error(error.message);      
+        }
+    }
+    async verifyUser(email: string): Promise<number> {
+        try {
+            const verifyEmail = await db("users").where({ email }).first();
+            if (!verifyEmail) {
+                throw new Error("Nenhum usuário com este email.");
+            }
+            return verifyEmail.id;
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
     async createUser(name: string, email: string, password_hash: string, birth_date: Date, phone: string | undefined): Promise<UserWithoutPasswordDTO>{
         try{
             const [userCreated] = await db("users")
@@ -96,6 +126,42 @@ export class UserData{
             return this.findPublicProfile(id);
         }catch(error: any){
             throw new Error(error.message);   
+        }
+    }
+    async updateResetToken(id:number,tokenHash: string, expires:Date){
+        try{
+            await db("users").where({ id }).update({
+                password_reset_token: tokenHash,
+                password_reset_expires: expires,
+            }); 
+        }catch(error: any){
+            throw new Error(error.message);            
+        } 
+    }
+
+    async validateResetPassword(password_reset_token: string): Promise<number> {
+        try{
+            const user = await db("users")
+                .where({ password_reset_token })
+                .andWhere("password_reset_expires", ">", new Date())
+                .first();
+            if(!user){
+                throw new Error("Token inválido ou expirado.");
+            }
+            return user.id
+        }catch(error: any){
+            throw new Error(error.message);   
+        }
+    }
+    async resetPassword(id:number, password_hash: string): Promise<void>{
+        try{
+            await db("users").where({ id }).update({
+                password_hash: password_hash,
+                password_reset_token: null,
+                password_reset_expires: null,
+            });
+        }catch(error: any){
+            throw new Error(error.message);  
         }
     }
 }

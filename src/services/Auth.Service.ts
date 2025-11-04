@@ -1,24 +1,15 @@
-import { db } from "../database/connection";
 import bcrypt from "bcryptjs";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { StringValue } from 'ms';
 import crypto from "crypto";
 import { LoginDTO } from "../dto/AuthDTO";
 import { ResetPasswordDTO } from "../dto/AuthDTO";
+import { UserData } from "../data/User.Data"
 
 class AuthService {
+  userData = new UserData();
   public async login({ email, password }: LoginDTO) {
-    const user = await db("users").where({ email }).first();
-    if (!user) {
-      throw new Error("E-mail ou senha inválidos.");
-    }
-    const isPasswordCorrect = await bcrypt.compare(
-      password,
-      user.password_hash
-    );
-    if (!isPasswordCorrect) {
-      throw new Error("E-mail ou senha inválidos.");
-    }
+    const user = await this.userData.login(email, password);
     const secret = process.env.JWT_SECRET;
     const expire: StringValue = process.env.JWT_EXPIRES_IN as StringValue ;
     if (!secret || !expire) {
@@ -29,12 +20,7 @@ class AuthService {
     return { user: userWithoutPassword, token: token };
   }
   public async forgotPassword(email: string): Promise<void> {
-    const user = await db("users").where({ email }).first();
-    if (!user) {
-      throw new Error(
-        ` O e-mail informado não possui cadastro no Borala: ${email}`
-      );
-    }
+    const userId = await this.userData.verifyUser(email);
     const resetToken = crypto.randomBytes(32).toString("hex"); 
     const tokenHash = crypto
       .createHash("sha256")
@@ -42,34 +28,17 @@ class AuthService {
       .digest("hex");
     const expires = new Date();
     expires.setHours(expires.getHours() + 1);
-
-    await db("users").where({ id: user.id }).update({
-      password_reset_token: tokenHash,
-      password_reset_expires: expires,
-    });
+    await this.userData.updateResetToken(userId, tokenHash, expires);
+    console.log( "Reset Token: ",resetToken);
   }
   public async resetPassword({
     token,
     password,
   }: ResetPasswordDTO): Promise<void> {
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-
-    const user = await db("users")
-      .where({ password_reset_token: tokenHash })
-      .andWhere("password_reset_expires", ">", new Date())
-      .first();
-
-    if (!user) {
-      throw new Error("Token inválido ou expirado.");
-    }
-
+    const userId = await this.userData.validateResetPassword(tokenHash);
     const newPasswordHash = await bcrypt.hash(password, 10);
-
-    await db("users").where({ id: user.id }).update({
-      password_hash: newPasswordHash,
-      password_reset_token: null,
-      password_reset_expires: null,
-    });
+    await this.userData.resetPassword(userId, newPasswordHash);
   }
 }
 export default new AuthService();
