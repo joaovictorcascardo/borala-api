@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { validate } from "../middlewares/validation.middleware";
 import { authMiddleware } from "../middlewares/authMiddleware";
-import VehicleController from "../controllers/VehicleController";
-import { VehicleValidator } from "../validators/VehicleValidator";
+import VehicleController from "../controllers/Vehicle.Controller";
+import { VehicleValidator } from "../validators/Vehicle.Validator";
 
 const vehicleRoutes = Router();
 

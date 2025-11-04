@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { validate } from "../middlewares/validation.middleware";
-import { createSession } from "../validators/SessionValidator";
-import { forgotPassword } from "../validators/PasswordValidator";
-import { resetPassword } from "../validators/PasswordValidator";
-import SessionController from "../controllers/SessionController";
-import PasswordController from "../controllers/PasswordController";
+import { createSession } from "../validators/Session.Validator";
+import { forgotPassword } from "../validators/Password.Validator";
+import { resetPassword } from "../validators/Password.Validator";
+import SessionController from "../controllers/Session.Controller";
+import PasswordController from "../controllers/Password.Controller";
 
 const authRoutes = Router();
 authRoutes.post(

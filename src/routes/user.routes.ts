@@ -1,8 +1,8 @@
 import { Router } from "express";
-import UserController from "../controllers/UserController";
+import UserController from "../controllers/User.Controller";
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { validate } from "../middlewares/validation.middleware";
-import { UserValidator } from "../validators/UserValidator";
+import { UserValidator } from "../validators/User.Validator";
 import multer from "multer";
 import uploadConfig from '../upload-images/upload';
 
