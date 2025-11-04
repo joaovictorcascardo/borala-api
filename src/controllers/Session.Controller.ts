@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import AuthService from "../services/AuthService";
+import AuthService from "../services/Auth.Service";
 
 class SessionController {
   async createSession(req: Request, res: Response): Promise<Response> {
