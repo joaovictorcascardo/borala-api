@@ -1,25 +1,13 @@
-import { db } from "../database/connection";
 import { CreateRideDTO } from "../dto/RideDTO";
+import { VehicleData} from "../data/Vehicle.Data";
+import { RideData } from "../data/Ride.Data";
+
 class RideService {
+  vehicleData = new VehicleData();
+  rideData = new RideData()
   async create(driverId: number, rideData: CreateRideDTO) {
-    const vehicle = await db("vehicles")
-      .where({
-        id: rideData.vehicle_id,
-        user_id: driverId,
-      })
-      .first();
-
-    if (!vehicle) {
-      throw new Error("Veículo não encontrado ou não pertence ao motorista.");
-    }
-
-    const dataToInsert = {
-      ...rideData,
-      driver_id: driverId,
-      status: "SCHEDULED",
-    };
-
-    const [newRide] = await db("rides").insert(dataToInsert).returning("*");
+    await this.vehicleData.verifyVehicleByIdAndUserId(rideData.vehicle_id, driverId);
+    const newRide = await this.rideData.create(driverId, rideData);
     return newRide;
   }
 }

@@ -16,6 +16,22 @@ export class VehicleData{
             throw new Error(error.message);
         }
     }
+    async verifyVehicleByIdAndUserId(id: number, user_id: number){
+        try{
+            const vehicle = await db("vehicles")
+                .where({
+                    id,
+                    user_id,
+                })
+                .first();
+            if (!vehicle) {
+                throw new Error("Veículo não encontrado ou não pertence ao motorista.");
+            }
+            return null;
+        }catch(error:any){
+            throw new Error(error.message);
+        }
+    }
     async createVehicle({ brand, model, color, license_plate, year, seats, userId }: CreateVehicleDTO):Promise<CreateVehicleDTO>{
         try{
             const [newVehicle] = await db("vehicles")
