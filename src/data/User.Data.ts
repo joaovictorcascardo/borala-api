@@ -10,11 +10,11 @@ import fs from 'fs/promises';
 import uploadConfig from '../upload-images/upload';
 
 export class UserData{
-    async getById(userId: number): Promise<UserGetMeDTO>{
+    async getById(userId: number): Promise<UserGetMeDTO | null>{
         try{
             const user = await db('users').where({ id: userId }).first();
             if (!user) {
-                throw new Error("Usuário não encontrado.");
+                return null;
             }
             delete user.password_hash;
             delete user.password_reset_token;
@@ -28,55 +28,37 @@ export class UserData{
             throw new Error(error.message);
         }
     }
-    async findPublicProfile(userId: number): Promise<PublicUserProfileDTO> {
+    async findPublicProfile(userId: number): Promise<PublicUserProfileDTO | null> {
         try{
             const user = await db('users').select('id', 'name', 'profile_picture_url', 'bio', 'average_rating').where({ id: userId }).first();
             if (!user) {
-                throw new Error("Usuário não encontrado.");
+                return null;
             }
             return user as PublicUserProfileDTO
         }catch(error : any){
             throw new Error(error.message);
         }
     }
-    async existingUser(email: string): Promise<null>{
+    async existingUser(email: string): Promise<boolean | number>{
         try{
             const verifyEmail = await db("users").where({ email }).first();
             if (verifyEmail) {
-                throw new Error("Este e-mail já está em uso.");
+                return verifyEmail.id;
             }
-            return null;
+            return false;
         }catch(error: any){
             throw new Error(error.message);            
         }
     }
-    async login(email: string, password: string): Promise<User>{
+    async login(email: string): Promise<User | null>{
         try{
             const user = await db("users").where({ email }).first();
             if(!user){
-                throw new Error("E-mail ou senha inválidos."); 
-            }
-            const isPasswordCorrect = await bcrypt.compare(
-                password,
-                user.password_hash
-            );
-            if (!isPasswordCorrect) {
-                throw new Error("E-mail ou senha inválidos.");
+                return null;
             }
             return user;
         }catch(error: any){
             throw new Error(error.message);      
-        }
-    }
-    async verifyUser(email: string): Promise<number> {
-        try {
-            const verifyEmail = await db("users").where({ email }).first();
-            if (!verifyEmail) {
-                throw new Error("Nenhum usuário com este email.");
-            }
-            return verifyEmail.id;
-        } catch (error: any) {
-            throw new Error(error.message);
         }
     }
     async createUser(name: string, email: string, password_hash: string, birth_date: Date, phone: string | undefined): Promise<UserWithoutPasswordDTO>{
@@ -106,11 +88,11 @@ export class UserData{
             throw new Error(error.message);      
         }
     }
-    async updateAvatar(id: number, AvatarName: string): Promise<PublicUserProfileDTO>{
+    async updateAvatar(id: number, AvatarName: string): Promise<PublicUserProfileDTO | null>{
         try{
             const user = await db('users').where({ id }).first();
             if (!user) {
-                throw new Error("Usuário não encontrado.");
+                return null;
             }
             if (user.profile_picture_url) {
                 const oldAvatarFilename = path.basename(user.profile_picture_url);
@@ -139,14 +121,14 @@ export class UserData{
         } 
     }
 
-    async validateResetPassword(password_reset_token: string): Promise<number> {
+    async validateResetPassword(password_reset_token: string): Promise<number | null> {
         try{
             const user = await db("users")
                 .where({ password_reset_token })
                 .andWhere("password_reset_expires", ">", new Date())
                 .first();
             if(!user){
-                throw new Error("Token inválido ou expirado.");
+                return null;
             }
             return user.id
         }catch(error: any){
