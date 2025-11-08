@@ -1,13 +1,22 @@
 import { Router } from "express";
 import BookingController from "../controllers/Booking.Controller";
-import { authMiddleware } from "../middlewares/authMiddleware"; 
+import { authMiddleware } from "../middlewares/authMiddleware";
 import { validate } from "../middlewares/validation.middleware";
 import { createBooking, updateBooking } from "../validators/Booking.Validator";
 
-const userRoutes = Router();
+const bookingRoutes = Router();
 
-userRoutes.post("/ride/:rideId/bookings", validate(createBooking), BookingController.create);
+bookingRoutes.use(authMiddleware);
+bookingRoutes.post(
+  "/ride/:rideId/bookings",
+  validate(createBooking),
+  BookingController.create
+);
+bookingRoutes.get("/me/bookings", BookingController.me);
+bookingRoutes.patch(
+  "/bookings/:id",
+  validate(updateBooking),
+  BookingController.patchStatus
+);
 
-userRoutes.get("/me/bookings", authMiddleware, BookingController.me);
-
-userRoutes.patch("/bookings/:id", validate(updateBooking),BookingController.patchStatus);
+export { bookingRoutes };
