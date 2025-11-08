@@ -1,8 +1,14 @@
 import { z } from "zod";
 
 export const createBooking = z.object({
-  vehicle_id: z
-    .number({ message: "O ID do veículo deve ser um número." }),
+  params: z.object({
+    rideId: z.coerce
+      .number({
+        message: "O ID da carona (rideId) deve ser um número.",
+      })
+      .int()
+      .positive(),
+  }),
   body: z.object({
     seats_booked: z
       .number({ message: "O número de assentos deve ser um número." })
@@ -12,10 +18,17 @@ export const createBooking = z.object({
 });
 
 export const updateBooking = z.object({
+  params: z.object({
+    id: z.coerce
+      .number({
+        message: "O ID da reserva (id) deve ser um número.",
+      })
+      .int()
+      .positive(),
+  }),
   body: z.object({
-    status: z
-      .enum(["CONFIRMED", "REJECTED", "CANCELLED"], {
-        message: "Status inválido.",
-      }),
+    status: z.enum(["CONFIRMED", "REJECTED", "CANCELLED"], {
+      message: "Status inválido. (CONFIRMED, REJECTED, CANCELLED)",
+    }),
   }),
 });
