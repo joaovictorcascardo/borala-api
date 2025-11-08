@@ -13,6 +13,6 @@ app.use("/authenticator", authRoutes);
 app.use("/users", userRoutes);
 app.use("/vehicles", vehicleRoutes);
 app.use("/rides", rideRoutes);
-app.use(bookingRoutes);
+app.use("/bookings", bookingRoutes);
 
 export { app };
