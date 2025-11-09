@@ -1,8 +1,14 @@
-import {CreateVehicleDTO} from "../dto/VehicleDTO";
-import { VehicleData } from "../data/Vehicle.Data"
+import { CreateVehicleDTO } from "../dto/VehicleDTO";
+import { VehicleData } from "../data/Vehicle.Data";
+import { Vehicle } from "../types/Vehicle";
 
 export class VehicleService {
-  vehicleData = new VehicleData();
+  private vehicleData: VehicleData;
+
+  constructor() {
+    this.vehicleData = new VehicleData();
+  }
+
   async create({
     brand,
     model,
@@ -11,9 +17,24 @@ export class VehicleService {
     year,
     seats,
     userId,
-  }: CreateVehicleDTO) {
-    await this.vehicleData.existingVehicle(license_plate);
-    const newVehicle = await this.vehicleData.createVehicle({brand, model, color, license_plate, year, seats, userId});
+  }: CreateVehicleDTO): Promise<Vehicle> {
+    const existingVehicle = await this.vehicleData.findByLicensePlate(
+      license_plate
+    );
+
+    if (existingVehicle) {
+      throw new Error("Veículo com esta placa já cadastrado.");
+    }
+
+    const newVehicle = await this.vehicleData.createVehicle({
+      brand,
+      model,
+      color,
+      license_plate,
+      year,
+      seats,
+      userId,
+    });
     return newVehicle;
   }
 
