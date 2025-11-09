@@ -8,7 +8,7 @@ import { UserData } from "../data/User.Data"
 
 class AuthService {
   userData = new UserData();
-  public async login({ email, password }: LoginDTO) {
+  async login({ email, password }: LoginDTO) {
     try{
       const user = await this.userData.login(email);
       if (!user || !(await bcrypt.compare(password, user.password_hash))){
@@ -26,7 +26,7 @@ class AuthService {
       throw new Error(error.message);   
     }
   }
-  public async forgotPassword(email: string): Promise<void> {
+  async forgotPassword(email: string): Promise<void> {
     try{
       const userId = await this.userData.existingUser(email);
       if (userId == false){
@@ -46,7 +46,7 @@ class AuthService {
     }
 
   }
-  public async resetPassword({
+  async resetPassword({
     token,
     password,
   }: ResetPasswordDTO): Promise<void> {
