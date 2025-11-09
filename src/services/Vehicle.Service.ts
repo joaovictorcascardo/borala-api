@@ -1,4 +1,4 @@
-import { CreateVehicleDTO } from "../dto/VehicleDTO";
+import { CreateVehicleDTO, UpdateVehicleDTO } from "../dto/VehicleDTO";
 import { VehicleData } from "../data/Vehicle.Data";
 import { Vehicle } from "../types/Vehicle";
 
@@ -41,6 +41,41 @@ export class VehicleService {
   async FindByUserId(userId: number) {
     const UserVehicles = await this.vehicleData.FindByUserId(userId);
     return UserVehicles;
+  }
+
+  async update(
+    vehicleId: number,
+    userId: number,
+    data: UpdateVehicleDTO
+  ): Promise<Vehicle> {
+    const vehicle = await this.vehicleData.findById(vehicleId);
+
+    if (!vehicle) {
+      throw new Error("Veículo não encontrado.");
+    }
+
+    if (vehicle.user_id !== userId) {
+      throw new Error(
+        "Operação não permitida. Este veículo não pertence a você."
+      );
+    }
+    return this.vehicleData.update(vehicleId, data);
+  }
+
+  async delete(vehicleId: number, userId: number): Promise<void> {
+    const vehicle = await this.vehicleData.findById(vehicleId);
+
+    if (!vehicle) {
+      throw new Error("Veículo não encontrado.");
+    }
+
+    if (vehicle.user_id !== userId) {
+      throw new Error(
+        "Operação não permitida. Este veículo não pertence a você."
+      );
+    }
+
+    await this.vehicleData.delete(vehicleId);
   }
 }
 
