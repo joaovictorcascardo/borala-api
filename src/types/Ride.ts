@@ -3,7 +3,6 @@ export type RideStatus =
   | "IN_PROGRESS"
   | "COMPLETED"
   | "CANCELLED";
-
 export interface Ride {
   id: number;
   driver_id: number;
@@ -20,6 +19,7 @@ export interface Ride {
   status: RideStatus;
   additional_info: string | null;
   estimated_total_cost: number | null;
+  automatic_approval: boolean;
   created_at: Date;
   updated_at: Date;
 }

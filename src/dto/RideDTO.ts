@@ -11,4 +11,5 @@ export interface CreateRideDTO {
   available_seats: number;
   estimated_total_cost?: number | null;
   additional_info?: string | null;
+  automatic_approval?: boolean;
 }

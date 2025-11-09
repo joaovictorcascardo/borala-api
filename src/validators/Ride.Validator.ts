@@ -43,9 +43,13 @@ const createRide = z.object({
 
     additional_info: z
       .string()
-      .min(20, { message: "Informações adicionais muito curtas (min 50)." })
+      .min(20, { message: "Informações adicionais muito curtas (min 20)." })
       .max(500, { message: "Informações adicionais muito longas (máx 500)." })
       .nullable()
+      .optional(),
+
+    automatic_approval: z
+      .boolean({ message: "Aprovação automática deve ser um booleano." })
       .optional(),
   }),
 });
