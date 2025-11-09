@@ -15,4 +15,18 @@ vehicleRoutes.post(
   VehicleController.create
 );
 
+vehicleRoutes.put(
+  "/:id",
+  authMiddleware,
+  validate(VehicleValidator.updateVehicle),
+  VehicleController.update
+);
+
+vehicleRoutes.delete(
+  "/:id",
+  authMiddleware,
+  validate(VehicleValidator.deleteVehicle),
+  VehicleController.delete
+);
+
 export { vehicleRoutes };
