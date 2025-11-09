@@ -1,23 +1,22 @@
-export interface CreateBooking {
-    id: number;
+import { BookingStatus } from "../types/Booking";
+
+export interface CreateBookingDTO {
+  seats_booked: number;
 }
 
-export interface UpdateBooking {
-    id: number;
-    ride_id: number;
-    passenger_id: number;
-    seats_booked: number;
-    status: string;
-    create_at: Date;
+export interface UpdateBookingStatusDTO {
+  status: "CONFIRMED" | "REJECTED" | "CANCELLED";
 }
 
-export interface GETBookingMe {
+export interface ListMyBookingsDTO {
+  id: number;
+  status: BookingStatus;
+  seats_booked: number;
+  created_at: Date;
+  ride: {
     id: number;
-    status: string;
-    ride: {
-        id: number;
-        oringin_address: string;
-        destination_address: string;
-        depature_time: string
-    }
+    origin_address: string;
+    destination_address: string;
+    departure_time: string;
+  };
 }

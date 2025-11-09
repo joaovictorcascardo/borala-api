@@ -1,103 +1,138 @@
-import { error } from "console";
 import { db } from "../database/connection";
+import { BookingData } from "../data/Booking.Data";
+import { RideData } from "../data/Ride.Data";
+import { ListMyBookingsDTO } from "../dto/BookingDTO";
+import { Booking, BookingStatus } from "../types/Booking";
+import { Ride } from "../types/Ride";
 
-type NewStatus = "CONFIRMED" | "REJECTED" | "CANCELLED" | "PENDING";
+export class BookingService {
+  private bookingData: BookingData;
+  private rideData: RideData;
 
-export default class BookingService {
-    static async create(rideId: Number, passengerId: number, seatsBooked: number) {
-        if (!Number.isFinite(rideId) || !Number.isFinite(passengerId)) {
-            throw new Error("rideId ou passengerId inválidos.");
-        }
-        if (!Number.isFinite(seatsBooked) || seatsBooked < 1) {
-            throw new Error("seats_booked inválidos.");
-        }
+  constructor() {
+    this.bookingData = new BookingData();
+    this.rideData = new RideData();
+  }
 
-        return await db.transaction(async (trx) => {
-            const ride = await trx("corridas").where("id", rideId).first();
-            if (!ride) throw new Error("Corrida inválida.");
-            if (ride.status !== "SCHEDULED") throw new Error("Corrida não aberta para corridas");
-            if (ride.drive_id === passengerId) throw new Error("O motorista não pode reservar sua própria viagem.");
-            if (seatsBooked > ride.avalible_seats) throw new Error("Numero de lugares insuficientes");
+  async create(
+    rideId: number,
+    passengerId: number,
+    seatsBooked: number
+  ): Promise<Booking> {
+    const ride = await this.rideData.findById(rideId);
 
-            const existing = await trx("corridas").where({ ride_id: rideId, passenger_id: passengerId }).first();
-            if (existing) {
-                throw new Error("Corrida já existe para esse usuario e corrida.");
-            }
-
-            const automatic = !!ride.automatic_approval;
-            const status: NewStatus = automatic ? "CONFIRMED" : "PENDING";
-
-            if (automatic) {
-              await trx("rides").where("id", rideId).update({
-                available_seats: ride.available_seats - seatsBooked,
-              });
-            }
-
-            const [created] = await trx("bookings")
-              .insert({
-                ride_id: rideId,
-                passenger_id: passengerId,
-                seats_booked: seatsBooked,
-                status,
-              })
-              .returning("*");
-
-              return created;
-        });
+    if (!ride) {
+      throw new Error("Corrida inválida.");
+    }
+    if (ride.driver_id === passengerId) {
+      throw new Error("O motorista não pode reservar sua própria viagem.");
+    }
+    if (ride.status !== "SCHEDULED") {
+      throw new Error("Esta corrida não está aceitando reservas.");
+    }
+    if (seatsBooked > ride.available_seats) {
+      throw new Error("Número de assentos solicitados excede os disponíveis.");
+    }
+    const existingBooking = await this.bookingData.findByRideAndPassenger(
+      rideId,
+      passengerId
+    );
+    if (existingBooking) {
+      throw new Error("Você já possui uma reserva para esta corrida.");
     }
 
-    static async listByUser(passengerId: number) {
-    if (!Number.isFinite(passengerId)) throw new Error("ID do passageiro inválido");
+    const newBooking = await this.bookingData.create(
+      rideId,
+      passengerId,
+      seatsBooked,
+      "PENDING"
+    );
 
-    const rows = await db("bookings as b")
-      .where("b.passenger_id", passengerId)
-      .leftJoin("rides as r", "r.id", "b.ride_id")
-      .select(
-        "b.id",
-        "b.status",
-        "b.seats_booked",
-        "b.created_at",
-        "r.id as ride_id",
-        "r.origin_address",
-        "r.destination_address",
-        "r.departure_time"
-      )
-      .orderBy("b.created_at", "desc");
+    return newBooking;
+  }
 
-    return rows.map((r: any) => ({
-      id: r.id,
-      status: r.status,
-      seats_booked: r.seats_booked,
-      created_at: r.created_at,
+  async listMyBookings(passengerId: number): Promise<ListMyBookingsDTO[]> {
+    const rawBookings = await this.bookingData.listByPassenger(passengerId);
+
+    const formattedBookings = rawBookings.map((row: any) => ({
+      id: row.id,
+      status: row.status,
+      seats_booked: row.seats_booked,
+      created_at: row.created_at,
       ride: {
-        id: r.ride_id,
-        origin_address: r.origin_address,
-        destination_address: r.destination_address,
-        departure_time: r.departure_time,
+        id: row.ride_id,
+        origin_address: row.origin_address,
+        destination_address: row.destination_address,
+        departure_time: row.departure_time,
       },
     }));
+
+    return formattedBookings;
   }
 
-  static async changeStatus(bookingId: number, userId: number, newStatus: NewStatus) {
-    if(!Number.isFinite(bookingId) || !Number.isFinite(userId)) {
-      throw new Error("Reserva ID ou user ID inválido");
+  async changeStatus(
+    bookingId: number,
+    userId: number,
+    newStatus: "CONFIRMED" | "REJECTED" | "CANCELLED"
+  ): Promise<Booking> {
+    const booking = await this.bookingData.findById(bookingId);
+    if (!booking) throw new Error("Reserva não localizada.");
+
+    const ride = await this.rideData.findById(booking.ride_id);
+    if (!ride) throw new Error("Corrida associada não localizada.");
+
+    const prevStatus = booking.status;
+    if (prevStatus === newStatus) return booking;
+
+    if (newStatus === "CONFIRMED" || newStatus === "REJECTED") {
+      if (ride.driver_id !== userId)
+        throw new Error("Apenas o motorista pode confirmar ou rejeitar.");
+      if (prevStatus !== "PENDING")
+        throw new Error(
+          `Não é possível ${newStatus} uma reserva que não está PENDENTE.`
+        );
+    } else if (newStatus === "CANCELLED") {
+      if (booking.passenger_id !== userId)
+        throw new Error("Apenas o passageiro pode cancelar sua reserva.");
+    }
+    let seatChange = 0;
+
+    if (newStatus === "CONFIRMED") {
+      seatChange = -booking.seats_booked;
+      if (ride.available_seats + seatChange < 0) {
+        throw new Error(
+          "Não há assentos suficientes para confirmar esta reserva."
+        );
+      }
+    } else if (
+      (newStatus === "CANCELLED" || newStatus === "REJECTED") &&
+      prevStatus === "CONFIRMED"
+    ) {
+      seatChange = +booking.seats_booked;
     }
 
-    return await db.transaction(async (trx) => {
-      const booking = await trx("bookings").where("id", bookingId).first();
-      if (!booking) throw new Error("Reserva não localizada");
-    
-      const ride = await trx("rides").where("id", booking.ride_id).first();
-      if (!ride) throw new Error("Corrida não localizada");
+    if (seatChange !== 0) {
+      return db.transaction(async (trx) => {
+        await trx("rides")
+          .where({ id: ride.id })
+          .update({
+            available_seats: ride.available_seats + seatChange,
+            updated_at: db.fn.now(),
+          });
 
-      const prevStatus: NewStatus = booking.status;
+        const [updatedBooking] = await trx("bookings")
+          .where({ id: booking.id })
+          .update({
+            status: newStatus,
+            updated_at: db.fn.now(),
+          })
+          .returning("*");
 
-      if (newStatus === "CONFIRMED" || newStatus === "REJECTED"){
-        if (ride.drive_id !== userId) throw new Error("Apenas motorista consegue confirmar/rejeitar reservas");
-      } else if (newStatus === "CANCELLED"){
-        if (booking.passenger_id !== userId) throw new Error("Apenas passageiro consegue cancelar reservas");
-      }
-    })
+        return updatedBooking;
+      });
+    } else {
+      return this.bookingData.updateStatus(booking.id, newStatus);
+    }
   }
-  
 }
+export default new BookingService();
