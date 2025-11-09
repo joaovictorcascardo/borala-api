@@ -54,11 +54,12 @@ export class VehicleService {
       throw new Error("Veículo não encontrado.");
     }
 
-    if (vehicle.user_id !== userId) {
+    if (Number(vehicle.user_id) !== userId) {
       throw new Error(
         "Operação não permitida. Este veículo não pertence a você."
       );
     }
+
     return this.vehicleData.update(vehicleId, data);
   }
 
@@ -69,7 +70,7 @@ export class VehicleService {
       throw new Error("Veículo não encontrado.");
     }
 
-    if (vehicle.user_id !== userId) {
+    if (Number(vehicle.user_id) !== userId) {
       throw new Error(
         "Operação não permitida. Este veículo não pertence a você."
       );
