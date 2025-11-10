@@ -1,5 +1,5 @@
 import { db } from "../database/connection";
-import { CreateRideDTO } from "../dto/RideDTO";
+import { CreateRideDTO, RidesMeDTO } from "../dto/RideDTO";
 import { Ride } from "../types/Ride";
 
 export class RideData {
@@ -36,6 +36,16 @@ export class RideData {
         .returning("*");
       return updatedRide;
     } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+  async getRides(driver_id: number): Promise<RidesMeDTO[]>{
+    try{
+      const rides = await db("rides")
+        .select('vehicle_id', 'event_id', 'origin_address', 'destination_address', 'departure_time', 'available_seats', 'estimated_total_cost','additional_info' )
+        .where({ driver_id });
+      return rides
+    }catch(error: any){
       throw new Error(error.message);
     }
   }

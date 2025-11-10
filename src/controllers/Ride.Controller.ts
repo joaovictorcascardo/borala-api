@@ -26,5 +26,20 @@ class RideController {
         .json({ error: "Ocorreu um erro interno ao criar a carona." });
     }
   }
+  async getRidesMe(req: AuthenticatedRequest, res: Response): Promise<Response>{
+    try {
+      const userId = req.user!.id;
+      const meRides = await RideService.getMeRides(userId);
+      return res.status(200).json(meRides);
+    }catch(error: any){
+      if (error.message === "Você não possui nenhuma corrida."){
+        return res.status(404).json({ error: error.message });
+      }
+      console.error(error);
+      return res
+        .status(500)
+        .json({ error: "Ocorreu um erro interno ao criar a carona." });
+    }
+  }
 }
 export default new RideController();

@@ -1,4 +1,4 @@
-import { CreateRideDTO } from "../dto/RideDTO";
+import { CreateRideDTO, RidesMeDTO } from "../dto/RideDTO";
 import { VehicleData } from "../data/Vehicle.Data";
 import { RideData } from "../data/Ride.Data";
 import { Ride } from "../types/Ride";
@@ -22,6 +22,17 @@ class RideService {
     }
     const newRide = await this.rideData.create(driverId, rideData);
     return newRide;
+  }
+  async getMeRides(driver_id: number): Promise<RidesMeDTO[]>{
+    try{
+      const rides = await this.rideData.getRides(driver_id);
+      if(rides.length === 0){
+        throw new Error("Você não possui nenhuma corrida.");
+      }
+      return rides;
+    }catch(error:any){
+      throw new Error(error.message);
+    }
   }
 }
 
