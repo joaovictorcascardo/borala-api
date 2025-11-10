@@ -1,7 +1,7 @@
 import { db } from "../database/connection";
 import { BookingData } from "../data/Booking.Data";
 import { RideData } from "../data/Ride.Data";
-import { ListMyBookingsDTO } from "../dto/BookingDTO";
+import { ListMyBookingsDTO, UpdateBookingStatusDTO } from "../dto/BookingDTO";
 import { Booking, BookingStatus } from "../types/Booking";
 import { Ride } from "../types/Ride";
 
@@ -24,7 +24,7 @@ export class BookingService {
     if (!ride) {
       throw new Error("Corrida inválida.");
     }
-    if (ride.driver_id === passengerId) {
+    if (Number(ride.driver_id) === passengerId) {
       throw new Error("O motorista não pode reservar sua própria viagem.");
     }
     if (ride.status !== "SCHEDULED") {
@@ -41,14 +41,35 @@ export class BookingService {
       throw new Error("Você já possui uma reserva para esta corrida.");
     }
 
-    const newBooking = await this.bookingData.create(
-      rideId,
-      passengerId,
-      seatsBooked,
-      "PENDING"
-    );
+    if (ride.automatic_approval) {
+      return db.transaction(async (trx) => {
+        await trx("rides")
+          .where({ id: rideId })
+          .update({
+            available_seats: ride.available_seats - seatsBooked,
+            updated_at: db.fn.now(),
+          });
 
-    return newBooking;
+        const [createdBooking] = await trx("bookings")
+          .insert({
+            ride_id: rideId,
+            passenger_id: passengerId,
+            seats_booked: seatsBooked,
+            status: "CONFIRMED",
+          })
+          .returning("*");
+
+        return createdBooking;
+      });
+    } else {
+      const newBooking = await this.bookingData.create(
+        rideId,
+        passengerId,
+        seatsBooked,
+        "PENDING"
+      );
+      return newBooking;
+    }
   }
 
   async listMyBookings(passengerId: number): Promise<ListMyBookingsDTO[]> {
@@ -85,16 +106,17 @@ export class BookingService {
     if (prevStatus === newStatus) return booking;
 
     if (newStatus === "CONFIRMED" || newStatus === "REJECTED") {
-      if (ride.driver_id !== userId)
+      if (Number(ride.driver_id) !== userId)
         throw new Error("Apenas o motorista pode confirmar ou rejeitar.");
       if (prevStatus !== "PENDING")
         throw new Error(
           `Não é possível ${newStatus} uma reserva que não está PENDENTE.`
         );
     } else if (newStatus === "CANCELLED") {
-      if (booking.passenger_id !== userId)
+      if (Number(booking.passenger_id) !== userId)
         throw new Error("Apenas o passageiro pode cancelar sua reserva.");
     }
+
     let seatChange = 0;
 
     if (newStatus === "CONFIRMED") {
@@ -135,4 +157,5 @@ export class BookingService {
     }
   }
 }
+
 export default new BookingService();
