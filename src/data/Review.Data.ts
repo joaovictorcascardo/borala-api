@@ -4,7 +4,9 @@ import { ReviewDTO, CreateReviewDTO } from "../dto/ReviewDTO"
 export class ReviewData {
     async getReviews(reviewee_id: number): Promise<null | ReviewDTO[]> {
         try{
-            const reviews = await db("reviews").select('reviewer_id', 'rating', 'comment').where({ reviewee_id });
+            const reviews = await db("reviews")
+                .select('reviewer_id', 'rating', 'comment')
+                .where({ reviewee_id });
             if (reviews.length === 0) {
                 return null;
             }
@@ -37,7 +39,7 @@ export class ReviewData {
     }
     async searchReview(ride_id: number, reviewer_id: number, reviewee_id: number):Promise <boolean>{
         try {
-            const review = await db('reviews')
+            const review = await db("reviews")
                 .where({
                     ride_id: ride_id,
                     reviewer_id: reviewer_id,
