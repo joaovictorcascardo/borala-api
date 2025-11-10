@@ -29,6 +29,10 @@ class ReviewService {
         if (reviewData.reviewer_id === reviewData.reviewee_id) {
             throw new Error("Um usuário não pode avaliar a si mesmo.");
         }
+        const existingReview = await this.reviewData.searchReview(reviewData.ride_id, reviewData.reviewer_id ,reviewData.reviewee_id);
+        if (existingReview === true){
+            throw new Error("Você ja avaliou este motorista nesta corrida.") ;
+        }
         try{
             const review = await this.reviewData.createReview(reviewData);
             return review;

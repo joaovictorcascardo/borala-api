@@ -35,4 +35,21 @@ export class ReviewData {
             throw new Error(error.message);
         }
     }
+    async searchReview(ride_id: number, reviewer_id: number, reviewee_id: number):Promise <boolean>{
+        try {
+            const review = await db('reviews')
+                .where({
+                    ride_id: ride_id,
+                    reviewer_id: reviewer_id,
+                    reviewee_id: reviewee_id
+                })
+                .first();
+                if(!review){
+                    return false
+                }
+            return true;
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
 }
