@@ -13,3 +13,14 @@ export interface CreateRideDTO {
   additional_info?: string | null;
   automatic_approval?: boolean;
 }
+
+export interface RidesMeDTO{
+  vehicle_id: number ;
+  event_id: number;
+  origin_address: string;
+  destination_addres: string;
+  departure_time: Date ;
+  available_seats: number ;
+  estimated_total_cost: number | null;
+  additional_info: number | null; 
+} 
