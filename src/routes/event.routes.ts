@@ -16,6 +16,10 @@ eventsRoutes.post(
     EventController.create
 );
 eventsRoutes.get(
+    "/",
+    EventController.getEvents
+);
+eventsRoutes.get(
     "/:id/rides",
     validate(EventValidator.verifyId),
     RideController.getRidesByEventId

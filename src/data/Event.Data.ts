@@ -1,7 +1,7 @@
 import { db } from "../database/connection";
-import { CreateEventDTO } from "../dto/EventDTO"; 
+import { CreateEventDTO, EventsDTO} from "../dto/EventDTO"; 
 export class EventData {
-    public async create(data: CreateEventDTO): Promise<CreateEventDTO[]> {
+    async create(data: CreateEventDTO): Promise<CreateEventDTO[]> {
         try {
             const event = await db('events')
                 .insert({
@@ -16,6 +16,20 @@ export class EventData {
                 .returning("*");
             return event;
         } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
+    async getEvents(): Promise<EventsDTO[]>{
+        try{
+            const events = await db('events')
+                .select(
+                    "id",
+                    "name",
+                    "address",
+                    "starts_at",
+                )
+            return events;
+        }catch(error: any){
             throw new Error(error.message);
         }
     }

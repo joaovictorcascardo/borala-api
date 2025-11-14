@@ -14,5 +14,17 @@ class EventController {
             return res.status(500).json({ error: "Ocorreu um erro interno ao criar o evento." });
         }
     }
+    async getEvents(req: Request, res: Response): Promise<Response>{
+        try{
+            const events = await EventService.getEvents();
+            return res.status(200).json(events);
+        }catch(error:any){
+            if (error.message === "Nenhum evento cadastrado."){
+                return res.status(200).json({ atenção: error.message });
+            }
+            console.error(error);
+            return res.status(500).json({ error: "Ocorreu um erro interno ao retornar os eventos." });
+        }
+    }
 }
 export default new EventController();
