@@ -73,7 +73,7 @@ class RideController {
       console.error(error);
       return res
         .status(500)
-        .json({ error: "Ocorreu um erro interno ao retornar a carona." });
+        .json({ error: "Ocorreu um erro interno ao atualizar o status dessa corrida." });
     }
   }
 }

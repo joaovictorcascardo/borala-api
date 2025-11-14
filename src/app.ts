@@ -5,6 +5,7 @@ import { vehicleRoutes } from "./routes/vehicle.routes";
 import { rideRoutes } from "./routes/ride.routes";
 import uploadConfig from "./upload-images/upload";
 import { bookingRoutes } from "./routes/booking.Routes";
+import { eventsRoutes } from "./routes/event.routes";
 
 const app = express();
 app.use(express.json());
@@ -14,5 +15,5 @@ app.use("/users", userRoutes);
 app.use("/vehicles", vehicleRoutes);
 app.use("/rides", rideRoutes);
 app.use("/bookings", bookingRoutes);
-
+app.use("/events", eventsRoutes);
 export { app };
