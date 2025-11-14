@@ -53,7 +53,14 @@ const createRide = z.object({
       .optional(),
   }),
 });
-
+const verifyId = z.object({
+  params: z.object({
+    id: z
+      .coerce.number({ message: "O ID é obrigatório no parâmetro da URL e deve ser um número." })
+      .int({ message: "O ID deve ser um número inteiro." })
+      .positive({ message: "O ID deve ser um número positivo." })
+  })
+})
 export const RideValidator = {
-  createRide,
+  createRide, verifyId,
 };

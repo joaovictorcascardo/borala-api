@@ -30,4 +30,12 @@ rideRoutes.post(
   validate(createReview),
   ReviewController.create
 );
+
+rideRoutes.get(
+  "/:id",
+  authMiddleware,
+  validate(RideValidator.verifyId),
+  RideController.getById
+);
+
 export { rideRoutes };

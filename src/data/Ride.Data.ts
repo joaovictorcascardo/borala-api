@@ -44,8 +44,18 @@ export class RideData {
       const rides = await db("rides")
         .select('vehicle_id', 'event_id', 'origin_address', 'destination_address', 'departure_time', 'available_seats', 'estimated_total_cost','additional_info' )
         .where({ driver_id });
-      return rides
+      return rides;
     }catch(error: any){
+      throw new Error(error.message);
+    }
+  }
+  async getRideById(id: number): Promise<RidesMeDTO[]>{
+    try {
+      const ride = await db("rides")
+        .select("vehicle_id", "event_id", "origin_address", "destination_address", "departure_time", "available_seats", "estimated_total_cost", "additional_info")
+        .where({ id });
+      return ride;
+    } catch (error: any) {
       throw new Error(error.message);
     }
   }

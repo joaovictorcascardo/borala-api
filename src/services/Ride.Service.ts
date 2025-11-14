@@ -34,6 +34,17 @@ class RideService {
       throw new Error(error.message);
     }
   }
+  async getRideById(RideId: number): Promise<RidesMeDTO[]>{
+    try{
+      const ride = await this.rideData.getRideById(RideId);
+      if (ride.length === 0) {
+        throw new Error("Nenhuma corrida encontrada com este ID.");
+      }
+      return ride;
+    }catch(error: any){
+      throw new Error(error.message);
+    }
+  }
 }
 
 export default new RideService();
