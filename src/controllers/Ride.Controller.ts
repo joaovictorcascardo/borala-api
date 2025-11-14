@@ -76,5 +76,20 @@ class RideController {
         .json({ error: "Ocorreu um erro interno ao atualizar o status dessa corrida." });
     }
   }
+  async getRidesByEventId(req: Request, res: Response){
+    try {
+      const eventId = Number(req.params.id); 
+      const rides = await RideService.getRidesbyEventId(eventId)
+      return res.status(200).json(rides);
+    }catch(error: any){
+      console.error(error);
+      if (error.message === "Nenhuma corrida encontrada para este evento."){
+        return res.status(404).json({ error: error.message });
+      }
+      return res
+        .status(500)
+        .json({ error: "Ocorreu um erro interno ao retornar caronas para este evento." });
+    }
+    }
 }
 export default new RideController();

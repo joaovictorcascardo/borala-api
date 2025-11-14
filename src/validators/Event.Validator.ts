@@ -19,6 +19,14 @@ const createEvent = z.object({
             .min(10, { message: "A descrição precisa conter ao menos 10 caracteres."})
     }),
 });
+const verifyId = z.object({
+    params: z.object({
+        id: z
+            .coerce.number({ message: "O ID é obrigatório no parâmetro da URL e deve ser um número." })
+            .int({ message: "O ID deve ser um número inteiro." })
+            .positive({ message: "O ID deve ser um número positivo." })
+    })
+});
 export const EventValidator = {
-    createEvent, 
+    createEvent, verifyId, 
 };

@@ -62,6 +62,17 @@ class RideService {
       throw new Error(error.message);
     }
   }
+  async getRidesbyEventId(event_id: number): Promise<RidesMeDTO[]>{
+    try{
+      const rides = await this.rideData.getRidesByEventId(event_id)
+      if(rides.length === 0){
+        throw new Error("Nenhuma corrida encontrada para este evento.");
+      }
+      return rides;
+    }catch(error: any){
+      throw new Error(error.message);
+    }
+  }
 }
 
 export default new RideService();
