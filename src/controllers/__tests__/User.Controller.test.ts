@@ -30,4 +30,11 @@ describe("User Controller", () => {
     expect(response.body.email).toBe(userData.email);
     expect(response.body).not.toHaveProperty("password_hash");
   });
+
+  it("deve retornar 409 (Conflict) ao tentar criar usuário com email duplicado", async () => {
+    await request(app).post("/users").send(userData);
+    const response = await request(app).post("/users").send(userData);
+    expect(response.status).toBe(409);
+    expect(response.body.error).toBe("Este e-mail já está em uso.");
+  });
 });
