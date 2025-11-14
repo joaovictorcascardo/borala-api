@@ -47,8 +47,8 @@ describe("User Controller", () => {
     const response = await request(app).post("/users").send(invalidUserData);
 
     expect(response.status).toBe(400);
-    expect(Array.isArray(response.body)).toBe(true);
-    expect(response.body[0].message).toContain("mínimo 3 caracteres");
+    const messages = response.body.map((err: any) => err.message);
+    expect(messages).toContain("O nome precisa ter no mínimo 3 caracteres.");
   });
 
   it("deve retornar 400 (Bad Request) se o email for inválido", async () => {
