@@ -37,4 +37,43 @@ describe("User Controller", () => {
     expect(response.status).toBe(409);
     expect(response.body.error).toBe("Este e-mail já está em uso.");
   });
+
+  it("deve retornar 400 (Bad Request) se o nome for muito curto", async () => {
+    const invalidUserData = {
+      ...userData,
+      name: "Jo",
+    };
+
+    const response = await request(app).post("/users").send(invalidUserData);
+
+    expect(response.status).toBe(400);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body[0].message).toContain("mínimo 3 caracteres");
+  });
+
+  it("deve retornar 400 (Bad Request) se o email for inválido", async () => {
+    const invalidUser = {
+      ...userData,
+      email: "email-invalido.com",
+    };
+
+    const response = await request(app).post("/users").send(invalidUser);
+
+    expect(response.status).toBe(400);
+    const messages = response.body.map((err: any) => err.message);
+    expect(messages).toContain("Formato de e-mail inválido.");
+  });
+
+  it("deve retornar 400 (Bad Request) se a senha for muito curta", async () => {
+    const invalidUser = {
+      ...userData,
+      password: "123",
+    };
+
+    const response = await request(app).post("/users").send(invalidUser);
+
+    expect(response.status).toBe(400);
+    const messages = response.body.map((err: any) => err.message);
+    expect(messages).toContain("A senha precisa ter no mínimo 6 caracteres.");
+  });
 });
