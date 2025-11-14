@@ -1,7 +1,8 @@
-import { CreateRideDTO, RidesMeDTO } from "../dto/RideDTO";
+import { CreateRideDTO, RidesMeDTO, RideStatus } from "../dto/RideDTO";
 import { VehicleData } from "../data/Vehicle.Data";
 import { RideData } from "../data/Ride.Data";
 import { Ride } from "../types/Ride";
+import { toLowerCase, toUpperCase } from "zod";
 
 class RideService {
   private vehicleData: VehicleData;
@@ -42,6 +43,22 @@ class RideService {
       }
       return ride;
     }catch(error: any){
+      throw new Error(error.message);
+    }
+  }
+  async patchRideStatus(rideId: number, driverId: number, rideStatus: string): Promise<RideStatus[]>{
+    try{
+      const upperRideStatus = rideStatus.toUpperCase();
+      console.log(upperRideStatus)
+      if (upperRideStatus != "IN_PROGRESS" && upperRideStatus != "COMPLETED" && upperRideStatus != "CANCELLED"){
+        throw new Error("Status invalido! O status passado deve ser: 'IN_PROGRESS', 'COMPLETED' ou 'CANCELLED'.");
+      }
+      const updatedRide = await this.rideData.patchStatus(rideId, driverId, rideStatus);
+      if (updatedRide.length === 0){
+        throw new Error("Esta corrida não vinculada a você ou não existe.");
+      }
+      return updatedRide;
+    }catch(error:any){
       throw new Error(error.message);
     }
   }

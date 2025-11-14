@@ -1,5 +1,5 @@
 import { db } from "../database/connection";
-import { CreateRideDTO, RidesMeDTO } from "../dto/RideDTO";
+import { CreateRideDTO, RidesMeDTO, RideStatus } from "../dto/RideDTO";
 import { Ride } from "../types/Ride";
 
 export class RideData {
@@ -56,6 +56,17 @@ export class RideData {
         .where({ id });
       return ride;
     } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+  async patchStatus(id: number, driver_id: number, status: string): Promise<RideStatus[]>{
+    try{
+      const updatedRide = await db("rides")
+        .where({ id: id })
+        .andWhere({ driver_id: driver_id })
+        .update({ status: status }).returning(["id", "driver_id", "status"]) as RideStatus[];
+      return updatedRide;
+    }catch(error: any){
       throw new Error(error.message);
     }
   }

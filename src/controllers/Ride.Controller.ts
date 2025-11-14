@@ -56,5 +56,25 @@ class RideController {
         .json({ error: "Ocorreu um erro interno ao retornar a carona." });
     }
   }
+  async patchRide(req: AuthenticatedRequest, res: Response){
+    try{
+      const { status } = req.body;
+      const rideId = Number(req.params.id);
+      const driver_Id = Number(req.user!.id)
+      const updatedRide = await RideService.patchRideStatus(rideId, driver_Id, status);
+      return res.status(200).json(updatedRide);
+    }catch(error: any){
+      if (error.message ==="Status invalido! O status passado deve ser: 'IN_PROGRESS', 'COMPLETED' ou 'CANCELLED'.") {
+        return res.status(400).json({ error: error.message });
+      }
+      if (error.message === "Esta corrida não vinculada a você ou não existe."){
+        return res.status(404).json({ error: error.message });
+      }
+      console.error(error);
+      return res
+        .status(500)
+        .json({ error: "Ocorreu um erro interno ao retornar a carona." });
+    }
+  }
 }
 export default new RideController();

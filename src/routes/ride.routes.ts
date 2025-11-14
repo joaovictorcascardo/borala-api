@@ -37,5 +37,10 @@ rideRoutes.get(
   validate(RideValidator.verifyId),
   RideController.getById
 );
-
+rideRoutes.patch(
+  "/:id/status",
+  authMiddleware,
+  validate(RideValidator.statusRide),
+  RideController.patchRide
+);
 export { rideRoutes };

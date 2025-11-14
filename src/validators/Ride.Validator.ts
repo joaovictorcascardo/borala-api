@@ -61,6 +61,18 @@ const verifyId = z.object({
       .positive({ message: "O ID deve ser um número positivo." })
   })
 })
+const statusRide = z.object({
+  params: z.object({
+    id: z
+      .coerce.number({ message: "O ID é obrigatório no parâmetro da URL e deve ser um número." })
+      .int({ message: "O ID deve ser um número inteiro." })
+      .positive({ message: "O ID deve ser um número positivo." })
+  }),
+  body: z.object({
+    status: z
+      .string({ message: "Precisa ser letras" })
+  })
+})
 export const RideValidator = {
-  createRide, verifyId,
+  createRide, verifyId, statusRide,
 };

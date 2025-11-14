@@ -24,3 +24,8 @@ export interface RidesMeDTO{
   estimated_total_cost: number | null;
   additional_info: number | null; 
 } 
+export interface RideStatus{
+  id: number;
+  driver_id: number;
+  status: string;
+}
