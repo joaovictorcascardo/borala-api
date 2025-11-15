@@ -16,7 +16,9 @@ class EventController {
     }
     async getEvents(req: Request, res: Response): Promise<Response>{
         try{
-            const events = await EventService.getEvents();
+            const page = Number(req.query.page) || 1;
+            const limit = Number(req.query.limit) || 5;
+            const events = await EventService.getEvents(page, limit);
             return res.status(200).json(events);
         }catch(error:any){
             if (error.message === "Nenhum evento cadastrado."){

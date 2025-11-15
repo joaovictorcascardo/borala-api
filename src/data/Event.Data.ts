@@ -19,8 +19,9 @@ export class EventData {
             throw new Error(error.message);
         }
     }
-    async getEvents(): Promise<EventsDTO[]>{
+    async getEvents(page: number, limit: number): Promise<EventsDTO[]>{
         try{
+            const offset = (page - 1) * limit;
             const events = await db('events')
                 .select(
                     "id",
@@ -28,6 +29,8 @@ export class EventData {
                     "address",
                     "starts_at",
                 )
+                .limit(limit)
+                .offset(offset)
             return events;
         }catch(error: any){
             throw new Error(error.message);

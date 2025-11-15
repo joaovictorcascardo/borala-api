@@ -11,9 +11,9 @@ class EventService {
             throw new Error(error.message);
         }
     }
-    async getEvents():Promise<EventsDTO[]>{
+    async getEvents(page: number, limit: number):Promise<EventsDTO[]>{
         try {
-            const events = await this.eventData.getEvents();
+            const events = await this.eventData.getEvents(page, limit);
             if(events.length === 0){
                 throw new Error("Nenhum evento cadastrado.")
             }
