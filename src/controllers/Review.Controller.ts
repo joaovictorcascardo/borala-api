@@ -5,8 +5,10 @@ import { AuthenticatedRequest } from "../types/Auth";
 class ReviewController {
     async getReviews(req: Request, res:Response):Promise<Response>{
         try{
+            const page = Number(req.query.page) || 1;
+            const limit = Number(req.query.limit) || 5;
             const userId = Number(req.params.id);
-            const userReviews = await ReviewService.getReviewsById(userId);
+            const userReviews = await ReviewService.getReviewsById(userId, page, limit);
             return res.status(200).json(userReviews);
         }catch(error:any){
             if (error.message === "Nenhuma avaliação foi encontrada para este usuário."){

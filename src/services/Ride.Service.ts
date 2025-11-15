@@ -24,9 +24,9 @@ class RideService {
     const newRide = await this.rideData.create(driverId, rideData);
     return newRide;
   }
-  async getMeRides(driver_id: number): Promise<RidesMeDTO[]>{
+  async getMeRides(driver_id: number, page: number, limit: number): Promise<RidesMeDTO[]>{
     try{
-      const rides = await this.rideData.getRides(driver_id);
+      const rides = await this.rideData.getRides(driver_id, page, limit);
       if(rides.length === 0){
         throw new Error("Você não possui nenhuma corrida.");
       }

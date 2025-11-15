@@ -6,9 +6,9 @@ class ReviewService {
     reviewData = new ReviewData();
     rideData = new RideData();
     userData = new UserData();
-    async getReviewsById(userId: number): Promise<ReviewDTO[]>{
+    async getReviewsById(userId: number, page: number, limit: number): Promise<ReviewDTO[]>{
         try{
-            const user = await this.reviewData.getReviews(userId);
+            const user = await this.reviewData.getReviews(userId, page, limit);
             if (!user){
                 throw new Error("Nenhuma avaliação foi encontrada para este usuário.")
             }

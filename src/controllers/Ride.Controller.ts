@@ -28,8 +28,10 @@ class RideController {
   }
   async getRidesMe(req: AuthenticatedRequest, res: Response): Promise<Response>{
     try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 5;
       const userId = req.user!.id;
-      const meRides = await RideService.getMeRides(userId);
+      const meRides = await RideService.getMeRides(userId, page, limit );
       return res.status(200).json(meRides);
     }catch(error: any){
       if (error.message === "Você não possui nenhuma corrida."){
