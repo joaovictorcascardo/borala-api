@@ -1,11 +1,13 @@
 import { CreateRideDTO, RidesMeDTO, RideStatus } from "../dto/RideDTO";
 import { VehicleData } from "../data/Vehicle.Data";
 import { RideData } from "../data/Ride.Data";
+import { EventData } from "../data/Event.Data";
 import { Ride } from "../types/Ride";
 import { toLowerCase, toUpperCase } from "zod";
 
 class RideService {
   private vehicleData: VehicleData;
+  eventData = new EventData();
   private rideData: RideData;
 
   constructor() {
@@ -18,6 +20,12 @@ class RideService {
       rideData.vehicle_id,
       driverId
     );
+    if (rideData.event_id) {
+      const event = await this.eventData.existsEvent(Number(rideData.event_id))
+      if (event == false) {
+        throw new Error("Evento não encontrado.");
+      }
+    }
     if (!driverVehicle) {
       throw new Error("Veículo não encontrado ou não pertence ao motorista.");
     }

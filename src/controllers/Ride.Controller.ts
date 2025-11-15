@@ -14,12 +14,12 @@ class RideController {
 
       return res.status(201).json(newRide);
     } catch (error: any) {
-      if (
-        error.message === "Veículo não encontrado ou não pertence ao motorista."
-      ) {
+      if (error.message === "Veículo não encontrado ou não pertence ao motorista.") {
         return res.status(400).json({ error: error.message });
       }
-
+      if(error.message === "Evento não encontrado."){
+        return res.status(400).json("Impossível criar carona: " + error.message);
+      }
       console.error(error);
       return res
         .status(500)

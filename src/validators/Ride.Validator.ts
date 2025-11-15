@@ -7,7 +7,7 @@ const createRide = z.object({
       .int({ message: "O ID do veículo deve ser um número inteiro." })
       .positive({ message: "O ID do veículo deve ser positivo." }),
 
-    event_id: z.number().int().positive().nullable().optional(),
+    event_id: z.number({ message: "O ID do veículo deve ser um número." }).int().positive().nullable().optional(),
 
     origin_address: z
       .string()

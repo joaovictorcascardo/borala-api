@@ -36,4 +36,15 @@ export class EventData {
             throw new Error(error.message);
         }
     }
+    async existsEvent(id: number): Promise<boolean>{
+        try {
+            const event = await db("events").where({ id }).first();
+            if(!event){
+                return false;
+            }
+            return true; 
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
 }
