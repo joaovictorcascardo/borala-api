@@ -45,10 +45,18 @@ class VehicleController {
     response: Response
   ): Promise<Response> {
     try {
+      const page = Number(request.query.page) || 1;
+      const limit = Number(request.query.limit) || 5;
       const userId = request.user!.id;
-      const vehicles = await VehicleService.FindByUserId(userId);
+      const vehicles = await VehicleService.FindByUserId(userId, page, limit);
       return response.status(200).json(vehicles);
     } catch (error: any) {
+      if (error.message === "Esta página não possui veículos.") {
+        return response.status(404).json({ error: error.message });
+      }
+      if (error.message === "Você não possui nenhum veículo."){
+        return response.status(404).json({error: error.message});
+      }
       console.error("Erro ao listar veículos:", error);
       return response
         .status(500)
