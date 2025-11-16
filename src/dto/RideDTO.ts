@@ -34,4 +34,7 @@ export interface RideFilters {
   origin?: string;
   date?: string;
   maxCost?: number; 
+  orderBy?: string;
+  orderDirection?: string;
+  status?: string;
 }

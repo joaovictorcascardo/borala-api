@@ -33,11 +33,15 @@ class RideController {
       const origin = req.query.origin as string | undefined;
       const date = req.query.date as string | undefined;
       const maxCost = req.query.maxCost? Number(req.query.maxCost): undefined;
-      const filters = { destination, origin, date, maxCost };
-
+      const orderBy = req.query.orderBy as string | undefined;
+      const orderDirection = req.query.orderDirection as string | undefined;
+      const status = req.query.status as string | undefined;
 
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 5;
+
+      const filters = { destination, origin, date, maxCost, orderBy, orderDirection, status };
+      
       const rides = await RideService.getRides(page, limit, filters)
       return res.status(200).json(rides);
     } catch (error: any){

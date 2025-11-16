@@ -43,7 +43,7 @@ export class RideData {
     try{
       const offset = (page - 1) * limit;
       const rides = await db("rides")
-        .select('vehicle_id', 'event_id', 'origin_address', 'destination_address', 'departure_time', 'available_seats', 'estimated_total_cost','additional_info' )
+        .select("vehicle_id", "event_id", "origin_address", "destination_address", "departure_time", "available_seats", "estimated_total_cost", "additional_info")
         .where({ driver_id })
         .limit(limit)
         .offset(offset);
@@ -101,6 +101,13 @@ export class RideData {
       }
       if (filters.date) {
         query.whereRaw("DATE(departure_time) = ?", filters.date);
+      }
+      if (filters.status) {
+        query.where("status", "ilike", "%" + filters.status?.toUpperCase() + "%");
+      }
+      if (filters.orderBy) {
+        const direction = filters.orderDirection?.toLowerCase() === "desc" ? "desc" : "asc";
+        query.orderBy(filters.orderBy, direction);
       }
       query.limit(limit)
         .offset(offset);
