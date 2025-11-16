@@ -41,8 +41,14 @@ class ReviewController {
                 return res.status(404).json({ error: error.message });
             } else if (error.message === "Um usuário não pode avaliar a si mesmo."){
                 return res.status(400).json({ error: error.message });
-            } else if (error.message === "Você ja avaliou este motorista nesta corrida."){
+            } else if (error.message === "Você ja avaliou este motorista/passageiro nesta carona."){
                 return res.status(400).json({ error: error.message });
+            } else if (error.message === "Você só pode avaliar caronas que já foram concluídas."){
+                return res.status(403).json({ error: error.message });
+            } else if (error.message === "O usuário que você quer avaliar não participou desta carona.") {
+                return res.status(403).json({ error: error.message });
+            } else if (error.message === "Você não participou desta carona, então não pode avaliá-la.") {
+                return res.status(403).json({ error: error.message });
             }
             return res.status(500).json({ error: "Ocorreu um erro interno ao criar review." });
         }
