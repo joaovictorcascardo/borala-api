@@ -1,5 +1,5 @@
 import { db } from "../database/connection";
-import { CreateRideDTO, RidesMeDTO, RideStatus } from "../dto/RideDTO";
+import { CreateRideDTO, RidesMeDTO, RideStatus, RideFilters} from "../dto/RideDTO";
 import { Ride } from "../types/Ride";
 
 export class RideData {
@@ -82,6 +82,31 @@ export class RideData {
         .limit(limit)
         .offset(offset);
       return rides;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+  async getAllRides(page: number, limit: number, filters: RideFilters): Promise<Ride[]> {
+    try {
+      const offset = (page - 1) * limit;
+      const query = db("rides").select("*");
+      if (filters.maxCost) {
+        query.where("estimated_total_cost", "<=", filters.maxCost);
+      }
+      if (filters.destination) {
+        query.where("destination_address", "ilike", "%" + filters.destination + "%");
+      }
+      if (filters.origin) {
+        query.where("origin_address", "ilike", "%" + filters.origin + "%");
+      }
+      if (filters.date) {
+        query.whereRaw("DATE(departure_time) = ?", filters.date);
+      }
+      query.limit(limit)
+        .offset(offset);
+      const rides = await query;
+      return rides;
+
     } catch (error: any) {
       throw new Error(error.message);
     }

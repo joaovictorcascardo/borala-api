@@ -16,6 +16,12 @@ rideRoutes.post(
   validate(RideValidator.createRide),
   RideController.create
 );
+rideRoutes.get(
+  "/",
+  authMiddleware,
+  RideController.getRides
+);
+
 
 rideRoutes.post(
   "/:rideId/bookings",

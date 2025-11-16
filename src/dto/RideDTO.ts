@@ -29,3 +29,9 @@ export interface RideStatus{
   driver_id: number;
   status: string;
 }
+export interface RideFilters {
+  destination?: string;
+  origin?: string;
+  date?: string;
+  maxCost?: number; 
+}

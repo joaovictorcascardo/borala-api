@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { AuthenticatedRequest } from "../types/Auth";
 import { CreateRideDTO } from "../dto/RideDTO";
 import RideService from "../services/Ride.Service";
+import { rideRoutes } from "../routes/ride.routes";
 
 class RideController {
   async create(req: AuthenticatedRequest, res: Response): Promise<Response> {
@@ -26,6 +27,33 @@ class RideController {
         .json({ error: "Ocorreu um erro interno ao criar a carona." });
     }
   }
+  async getRides(req: AuthenticatedRequest, res: Response): Promise<Response>{
+    try {
+      const destination = req.query.destination as string | undefined;
+      const origin = req.query.origin as string | undefined;
+      const date = req.query.date as string | undefined;
+      const maxCost = req.query.maxCost? Number(req.query.maxCost): undefined;
+      const filters = { destination, origin, date, maxCost };
+
+
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 5;
+      const rides = await RideService.getRides(page, limit, filters)
+      return res.status(200).json(rides);
+    } catch (error: any){
+      if (error.message === "Esta página não possui caronas.") {
+        return res.status(404).json({ error: error.message });
+      }
+      if (error.message === "Nenhuma carona encontrada.") {
+        return res.status(404).json({ error: error.message });
+      }
+      return res
+        .status(500)
+        .json({ error: "Ocorreu um erro interno ao listar as caronas." });
+    }
+  }
+
+
   async getRidesMe(req: AuthenticatedRequest, res: Response): Promise<Response>{
     try {
       const page = Number(req.query.page) || 1;

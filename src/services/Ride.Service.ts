@@ -1,4 +1,4 @@
-import { CreateRideDTO, RidesMeDTO, RideStatus } from "../dto/RideDTO";
+import { CreateRideDTO, RidesMeDTO, RideStatus, RideFilters } from "../dto/RideDTO";
 import { VehicleData } from "../data/Vehicle.Data";
 import { RideData } from "../data/Ride.Data";
 import { EventData } from "../data/Event.Data";
@@ -90,6 +90,18 @@ class RideService {
     }catch(error: any){
       throw new Error(error.message);
     }
+  }
+  async getRides(page: number, limit: number, filters: RideFilters) {
+    const rides = await this.rideData.getAllRides(page, limit, filters);
+    if (rides.length === 0) {
+      if (page === 1) {
+        throw new Error("Nenhuma carona encontrada.");
+      }
+      else {
+        throw new Error("Esta página não possui caronas.");
+      }
+    }
+    return rides;
   }
 }
 
