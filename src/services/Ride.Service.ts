@@ -62,14 +62,18 @@ class RideService {
   async patchRideStatus(rideId: number, driverId: number, rideStatus: string): Promise<RideStatus[]>{
     try{
       const upperRideStatus = rideStatus.toUpperCase();
-      console.log(upperRideStatus)
+      const ride = await this.rideData.findById(rideId);
+      if (!ride) {
+        throw new Error("Carona não encontrada.");
+      }
+      if (ride.driver_id != driverId) {
+        throw new Error("Você não tem permissão para alterar esta carona.");
+      }
       if (upperRideStatus != "IN_PROGRESS" && upperRideStatus != "COMPLETED" && upperRideStatus != "CANCELLED"){
         throw new Error("Status invalido! O status passado deve ser: 'IN_PROGRESS', 'COMPLETED' ou 'CANCELLED'.");
       }
       const updatedRide = await this.rideData.patchStatus(rideId, driverId, rideStatus);
-      if (updatedRide.length === 0){
-        throw new Error("Esta corrida não vinculada a você ou não existe.");
-      }
+    
       return updatedRide;
     }catch(error:any){
       throw new Error(error.message);

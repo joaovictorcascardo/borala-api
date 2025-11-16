@@ -104,8 +104,11 @@ class RideController {
       if (error.message ==="Status invalido! O status passado deve ser: 'IN_PROGRESS', 'COMPLETED' ou 'CANCELLED'.") {
         return res.status(400).json({ error: error.message });
       }
-      if (error.message === "Esta corrida não vinculada a você ou não existe."){
+      if (error.message === "Carona não encontrada."){
         return res.status(404).json({ error: error.message });
+      }
+      if (error.message === "Você não tem permissão para alterar esta carona.") {
+        return res.status(403).json({ error: error.message });
       }
       console.error(error);
       return res
