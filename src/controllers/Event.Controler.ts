@@ -21,6 +21,9 @@ class EventController {
             const events = await EventService.getEvents(page, limit);
             return res.status(200).json(events);
         }catch(error:any){
+            if (error.message === "Esta página não possui eventos.") {
+                return res.status(200).json({ atenção: error.message });
+            }
             if (error.message === "Nenhum evento cadastrado."){
                 return res.status(200).json({ atenção: error.message });
             }

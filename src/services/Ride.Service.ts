@@ -35,8 +35,13 @@ class RideService {
   async getMeRides(driver_id: number, page: number, limit: number): Promise<RidesMeDTO[]>{
     try{
       const rides = await this.rideData.getRides(driver_id, page, limit);
-      if(rides.length === 0){
-        throw new Error("Você não possui nenhuma corrida.");
+      if (rides.length === 0) {
+        if (page === 1) {
+          throw new Error("Você não possui nenhuma carona.");
+        }
+        else {
+          throw new Error("Esta página não possui caronas.");
+        }
       }
       return rides;
     }catch(error:any){
@@ -70,11 +75,16 @@ class RideService {
       throw new Error(error.message);
     }
   }
-  async getRidesbyEventId(event_id: number): Promise<RidesMeDTO[]>{
+  async getRidesbyEventId(event_id: number, page: number, limit: number): Promise<RidesMeDTO[]>{
     try{
-      const rides = await this.rideData.getRidesByEventId(event_id)
-      if(rides.length === 0){
-        throw new Error("Nenhuma corrida encontrada para este evento.");
+      const rides = await this.rideData.getRidesByEventId(event_id, page, limit)
+      if (rides.length === 0) {
+        if (page === 1) {
+          throw new Error("Nenhuma carona encontrada para este evento.");
+        }
+        else {
+          throw new Error("Esta página não possui caronas para este evento.");
+        }
       }
       return rides;
     }catch(error: any){

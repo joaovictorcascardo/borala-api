@@ -11,6 +11,9 @@ class ReviewController {
             const userReviews = await ReviewService.getReviewsById(userId, page, limit);
             return res.status(200).json(userReviews);
         }catch(error:any){
+            if (error.message === "Esta página não possui avaliações."){
+                return res.status(404).json({ error: error.message });
+            }
             if (error.message === "Nenhuma avaliação foi encontrada para este usuário."){
                 return res.status(404).json({ error: error.message });
             } 

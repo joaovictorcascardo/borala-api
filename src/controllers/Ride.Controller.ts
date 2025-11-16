@@ -34,7 +34,10 @@ class RideController {
       const meRides = await RideService.getMeRides(userId, page, limit );
       return res.status(200).json(meRides);
     }catch(error: any){
-      if (error.message === "Você não possui nenhuma corrida."){
+      if (error.message === "Esta página não possui caronas."){
+        return res.status(404).json({ error: error.message });    
+      }
+      if (error.message === "Você não possui nenhuma carona."){
         return res.status(404).json({ error: error.message });
       }
       console.error(error);
@@ -80,12 +83,17 @@ class RideController {
   }
   async getRidesByEventId(req: Request, res: Response){
     try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 5;
       const eventId = Number(req.params.id); 
-      const rides = await RideService.getRidesbyEventId(eventId)
+      const rides = await RideService.getRidesbyEventId(eventId, page, limit)
       return res.status(200).json(rides);
     }catch(error: any){
       console.error(error);
-      if (error.message === "Nenhuma corrida encontrada para este evento."){
+      if (error.message === "Esta página não possui caronas para este evento.") {
+        return res.status(404).json({ error: error.message });
+      }
+      if (error.message === "Nenhuma carona encontrada para este evento."){
         return res.status(404).json({ error: error.message });
       }
       return res

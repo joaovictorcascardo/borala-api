@@ -73,11 +73,14 @@ export class RideData {
       throw new Error(error.message);
     }
   }
-  async getRidesByEventId(event_id: number): Promise<RidesMeDTO[]>{
+  async getRidesByEventId(event_id: number, page: number, limit: number): Promise<RidesMeDTO[]>{
     try {
+      const offset = (page - 1) * limit;
       const rides = await db("rides")
         .select("vehicle_id", "event_id", "origin_address", "destination_address", "departure_time", "available_seats", "estimated_total_cost", "additional_info")
         .where({ event_id: event_id })
+        .limit(limit)
+        .offset(offset);
       return rides;
     } catch (error: any) {
       throw new Error(error.message);

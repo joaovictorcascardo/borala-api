@@ -9,8 +9,13 @@ class ReviewService {
     async getReviewsById(userId: number, page: number, limit: number): Promise<ReviewDTO[]>{
         try{
             const user = await this.reviewData.getReviews(userId, page, limit);
-            if (!user){
-                throw new Error("Nenhuma avaliação foi encontrada para este usuário.")
+            if (!user) {
+                if (page === 1) {
+                    throw new Error("Nenhuma avaliação foi encontrada para este usuário.");
+                }
+                else {
+                    throw new Error("Esta página não possui avaliações.");
+                }
             }
             return user;
         }catch(error: any){
