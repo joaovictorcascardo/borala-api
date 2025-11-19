@@ -5,7 +5,6 @@ import { vehicleRoutes } from "./routes/vehicle.routes";
 import { rideRoutes } from "./routes/ride.routes";
 import uploadConfig from "./upload-images/upload";
 import { bookingRoutes } from "./routes/booking.Routes";
-
 const app = express();
 app.use(express.json());
 app.use("/files", express.static(uploadConfig.directory));

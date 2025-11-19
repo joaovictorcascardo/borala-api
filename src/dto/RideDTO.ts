@@ -13,3 +13,7 @@ export interface CreateRideDTO {
   additional_info?: string | null;
   automatic_approval?: boolean;
 }
+
+export interface RidesMeDTO {
+
+}
