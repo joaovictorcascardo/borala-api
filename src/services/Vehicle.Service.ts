@@ -1,6 +1,6 @@
-import { CreateVehicleDTO, UpdateVehicleDTO } from "../dto/VehicleDTO";
+import { CreateVehicleDTO, UpdateVehicleDTO, UserVehicleListDTO } from "../dto/VehicleDTO";
 import { VehicleData } from "../data/Vehicle.Data";
-import { Vehicle } from "../types/Vehicle";
+import { Vehicle} from "../types/Vehicle";
 
 export class VehicleService {
   private vehicleData: VehicleData;
@@ -38,9 +38,18 @@ export class VehicleService {
     return newVehicle;
   }
 
-  async FindByUserId(userId: number) {
-    const UserVehicles = await this.vehicleData.FindByUserId(userId);
-    return UserVehicles;
+  async FindByUserId(userId: number, page: number, limit: number): Promise<UserVehicleListDTO[]> {
+    const userVehicles = await this.vehicleData.FindByUserId(userId, page, limit);
+    
+    if (userVehicles.length === 0){
+      if (page === 1) {
+        throw new Error("Você não possui nenhum veículo.");
+      }
+      else {
+        throw new Error("Esta página não possui veículos.");
+      }
+    }
+    return userVehicles;
   }
 
   async update(

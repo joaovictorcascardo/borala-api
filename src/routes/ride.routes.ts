@@ -16,6 +16,12 @@ rideRoutes.post(
   validate(RideValidator.createRide),
   RideController.create
 );
+rideRoutes.get(
+  "/",
+  authMiddleware,
+  RideController.getRides
+);
+
 
 rideRoutes.post(
   "/:rideId/bookings",
@@ -29,5 +35,18 @@ rideRoutes.post(
   authMiddleware,
   validate(createReview),
   ReviewController.create
+);
+
+rideRoutes.get(
+  "/:id",
+  authMiddleware,
+  validate(RideValidator.verifyId),
+  RideController.getById
+);
+rideRoutes.patch(
+  "/:id/status",
+  authMiddleware,
+  validate(RideValidator.statusRide),
+  RideController.patchRide
 );
 export { rideRoutes };

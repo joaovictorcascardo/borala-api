@@ -7,7 +7,7 @@ const createRide = z.object({
       .int({ message: "O ID do veículo deve ser um número inteiro." })
       .positive({ message: "O ID do veículo deve ser positivo." }),
 
-    event_id: z.number().int().positive().nullable().optional(),
+    event_id: z.number({ message: "O ID do veículo deve ser um número." }).int().positive().nullable().optional(),
 
     origin_address: z
       .string()
@@ -53,7 +53,26 @@ const createRide = z.object({
       .optional(),
   }),
 });
-
+const verifyId = z.object({
+  params: z.object({
+    id: z
+      .coerce.number({ message: "O ID é obrigatório no parâmetro da URL e deve ser um número." })
+      .int({ message: "O ID deve ser um número inteiro." })
+      .positive({ message: "O ID deve ser um número positivo." })
+  })
+})
+const statusRide = z.object({
+  params: z.object({
+    id: z
+      .coerce.number({ message: "O ID é obrigatório no parâmetro da URL e deve ser um número." })
+      .int({ message: "O ID deve ser um número inteiro." })
+      .positive({ message: "O ID deve ser um número positivo." })
+  }),
+  body: z.object({
+    status: z
+      .string({ message: "Precisa ser letras" })
+  })
+})
 export const RideValidator = {
-  createRide,
+  createRide, verifyId, statusRide,
 };

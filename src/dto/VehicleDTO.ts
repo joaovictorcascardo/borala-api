@@ -15,3 +15,13 @@ export interface UpdateVehicleDTO {
   year?: number;
   seats?: number;
 }
+
+export interface UserVehicleListDTO {
+  id: number;
+  brand: string;
+  model: string;
+  color: string;
+  license_plate: string;
+  year: number;
+  seats: number;
+};

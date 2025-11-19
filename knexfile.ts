@@ -9,24 +9,33 @@ if (!process.env.DB_HOST || !process.env.DB_PASSWORD) {
   process.exit(1);
 }
 
-const config: { [key: string]: Knex.Config } = {
-  development: {
-    client: "pg",
-    connection: {
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT || "5432"),
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-    },
-    migrations: {
-      directory: path.join(__dirname, "src", "database", "migrations"),
-      extension: "ts",
-    },
-    seeds: {
-      directory: path.join(__dirname, "src", "database", "seeds"),
-    },
+const developmentConfig = {
+  client: "pg",
+  connection: {
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT || "5432"),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
   },
+  migrations: {
+    directory: path.join(__dirname, "src", "database", "migrations"),
+    extension: "ts",
+  },
+  seeds: {
+    directory: path.join(__dirname, "src", "database", "seeds"),
+  },
+};
+const testConfig: Knex.Config = {
+  ...developmentConfig,
+  connection: {
+    ...developmentConfig.connection,
+    database: process.env.DB_NAME_TEST,
+  },
+};
+const config: { [key: string]: Knex.Config } = {
+  development: developmentConfig,
+  test: testConfig,
 };
 
 module.exports = config;

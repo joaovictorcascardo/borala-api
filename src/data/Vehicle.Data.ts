@@ -1,16 +1,6 @@
 import { db } from "../database/connection";
-import { CreateVehicleDTO, UpdateVehicleDTO } from "../dto/VehicleDTO";
+import { CreateVehicleDTO, UpdateVehicleDTO, UserVehicleListDTO } from "../dto/VehicleDTO";
 import { Vehicle } from "../types/Vehicle";
-
-type UserVehicleListDTO = {
-  id: number;
-  brand: string;
-  model: string;
-  color: string;
-  license_plate: string;
-  year: number;
-  seats: number;
-};
 
 export class VehicleData {
   async findByLicensePlate(
@@ -67,9 +57,10 @@ export class VehicleData {
       throw new Error(error.message);
     }
   }
-  async FindByUserId(user_id: number): Promise<UserVehicleListDTO[]> {
+  async FindByUserId(user_id: number, page: number, limit: number): Promise<UserVehicleListDTO[]> {
     try {
-      const UserVehicles = await db("vehicles")
+      const offset = (page - 1) * limit;
+      const userVehicles = await db("vehicles")
         .where({ user_id })
         .select(
           "id",
@@ -79,8 +70,10 @@ export class VehicleData {
           "license_plate",
           "year",
           "seats"
-        );
-      return UserVehicles;
+        )
+        .limit(limit)
+        .offset(offset);
+      return userVehicles;
     } catch (error: any) {
       throw new Error(error.message);
     }

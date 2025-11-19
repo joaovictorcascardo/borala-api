@@ -76,4 +76,21 @@ export class BookingData {
       throw new Error(error.message);
     }
   }
+  async isPassenger(ride_id: number, user_id: number): Promise<boolean> {
+    try {
+      const booking = await db("bookings")
+        .where({
+          ride_id,
+          passenger_id: user_id,
+          status: "CONFIRMED"
+        })
+        .first();
+      if (!booking) {
+        return false
+      }
+      return true;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
 }
