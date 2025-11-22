@@ -2,10 +2,12 @@ import ReviewService from "../Review.Service";
 import { ReviewData } from "../../data/Review.Data";
 import { RideData } from "../../data/Ride.Data";
 import { UserData } from "../../data/User.Data";
+import { BookingData } from "../../data/Booking.Data";
 
 jest.mock("../../data/Review.Data");
 jest.mock("../../data/Ride.Data");
 jest.mock("../../data/User.Data");
+jest.mock("../../data/Booking.Data");
 
 describe("Review Service", () => {
   beforeEach(() => {
@@ -22,10 +24,19 @@ describe("Review Service", () => {
     };
 
     it("deve criar avaliação com sucesso", async () => {
-      (RideData.prototype.findById as jest.Mock).mockResolvedValue({ id: 10 });
+      (RideData.prototype.findById as jest.Mock).mockResolvedValue({
+        id: 10,
+        status: "COMPLETED",
+        driver_id: 200,
+      });
       (UserData.prototype.getById as jest.Mock).mockResolvedValue({ id: 200 });
+
+      (BookingData.prototype.isPassenger as jest.Mock).mockResolvedValue(true);
+
       (ReviewData.prototype.searchReview as jest.Mock).mockResolvedValue(false);
-      (ReviewData.prototype.createReview as jest.Mock).mockResolvedValue(reviewDTO);
+      (ReviewData.prototype.createReview as jest.Mock).mockResolvedValue(
+        reviewDTO
+      );
 
       const result = await ReviewService.createReview(reviewDTO);
 
@@ -33,20 +44,32 @@ describe("Review Service", () => {
     });
 
     it("deve lançar erro se for autoavaliação", async () => {
-      (RideData.prototype.findById as jest.Mock).mockResolvedValue({ id: 10 });
+      (RideData.prototype.findById as jest.Mock).mockResolvedValue({
+        id: 10,
+        status: "COMPLETED",
+        driver_id: 100,
+      });
       (UserData.prototype.getById as jest.Mock).mockResolvedValue({ id: 100 });
 
-      await expect(ReviewService.createReview({ ...reviewDTO, reviewee_id: 100 }))
-        .rejects.toThrow("Um usuário não pode avaliar a si mesmo.");
+      await expect(
+        ReviewService.createReview({ ...reviewDTO, reviewee_id: 100 })
+      ).rejects.toThrow("Um usuário não pode avaliar a si mesmo.");
     });
 
     it("deve lançar erro se já houver avaliação", async () => {
-      (RideData.prototype.findById as jest.Mock).mockResolvedValue({ id: 10 });
+      (RideData.prototype.findById as jest.Mock).mockResolvedValue({
+        id: 10,
+        status: "COMPLETED",
+        driver_id: 200,
+      });
       (UserData.prototype.getById as jest.Mock).mockResolvedValue({ id: 200 });
+
+      (BookingData.prototype.isPassenger as jest.Mock).mockResolvedValue(true);
       (ReviewData.prototype.searchReview as jest.Mock).mockResolvedValue(true);
 
-      await expect(ReviewService.createReview(reviewDTO))
-        .rejects.toThrow("Você ja avaliou este motorista nesta corrida.");
+      await expect(ReviewService.createReview(reviewDTO)).rejects.toThrow(
+        "Você ja avaliou este motorista/passageiro nesta carona."
+      );
     });
   });
 });
