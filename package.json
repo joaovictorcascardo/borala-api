@@ -4,11 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-<<<<<<< HEAD
-    "test": "jest",
-=======
     "test": "cross-env NODE_ENV=test jest --detectOpenHandles",
->>>>>>> bd9a409fcb9b83e28ad0db3e7589bd8f6e6b23d1
     "dev": "ts-node-dev --transpile-only --ignore-watch node_modules --respawn src/server.ts"
   },
   "keywords": [],
@@ -32,10 +28,7 @@
     "@types/multer": "^2.0.0",
     "@types/node": "^24.7.2",
     "@types/supertest": "^6.0.3",
-<<<<<<< HEAD
-=======
     "cross-env": "^10.1.0",
->>>>>>> bd9a409fcb9b83e28ad0db3e7589bd8f6e6b23d1
     "jest": "^30.2.0",
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.5",
