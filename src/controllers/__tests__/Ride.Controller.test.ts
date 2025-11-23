@@ -18,7 +18,7 @@ describe("Ride Controller", () => {
   const driverData = {
     name: "Motorista",
     email: "motorista@teste.com",
-    password: "senha123",
+    password: "senha123", // Senha ok
     birth_date: "1990-01-01",
     phone: 11999998888,
   };
@@ -48,7 +48,7 @@ describe("Ride Controller", () => {
       const vehicleId = vehicleRes.body.id;
 
       const rideData = {
-        vehicle_id: vehicleId,
+        vehicle_id: Number(vehicleId), // CORRIGIDO: Conversão explícita para Number
         origin_address: "Rua A, 123",
         origin_latitude: -23.55052,
         origin_longitude: -46.633308,
@@ -57,8 +57,8 @@ describe("Ride Controller", () => {
         destination_longitude: -43.1729,
         departure_time: new Date().toISOString(),
         available_seats: 3,
-        estimated_total_cost: 50.00,
-        automatic_approval: true
+        estimated_total_cost: 50.0,
+        automatic_approval: true,
       };
 
       const response = await request(app)
@@ -72,39 +72,52 @@ describe("Ride Controller", () => {
     });
 
     it("deve retornar 400 se o veículo não pertencer ao motorista", async () => {
-       await request(app).post("/users").send(driverData);
-       const loginRes1 = await request(app).post("/authenticator/sessions").send({
-         email: driverData.email, password: driverData.password
-       });
-       const token1 = loginRes1.body.token;
+      await request(app).post("/users").send(driverData);
+      const loginRes1 = await request(app)
+        .post("/authenticator/sessions")
+        .send({
+          email: driverData.email,
+          password: driverData.password,
+        });
+      const token1 = loginRes1.body.token;
 
-       const vehicleRes = await request(app).post("/vehicles").set("Authorization", `Bearer ${token1}`).send(vehicleData);
-       const vehicleId = vehicleRes.body.id;
+      const vehicleRes = await request(app)
+        .post("/vehicles")
+        .set("Authorization", `Bearer ${token1}`)
+        .send(vehicleData);
+      const vehicleId = vehicleRes.body.id;
 
-       const intruderData = { ...driverData, email: "intruso@teste.com" };
-       await request(app).post("/users").send(intruderData);
-       const loginRes2 = await request(app).post("/authenticator/sessions").send({
-         email: intruderData.email, password: intruderData.password
-       });
-       const token2 = loginRes2.body.token;
+      const intruderData = { ...driverData, email: "intruso@teste.com" };
+      await request(app).post("/users").send(intruderData);
+      const loginRes2 = await request(app)
+        .post("/authenticator/sessions")
+        .send({
+          email: intruderData.email,
+          password: intruderData.password,
+        });
+      const token2 = loginRes2.body.token;
 
-       const rideData = {
-         vehicle_id: vehicleId,
-         origin_address: "Rua A",
-         origin_latitude: 0, origin_longitude: 0,
-         destination_address: "Rua B",
-         destination_latitude: 0, destination_longitude: 0,
-         departure_time: new Date().toISOString(),
-         available_seats: 3
-       };
+      const rideData = {
+        vehicle_id: Number(vehicleId), // CORRIGIDO: Conversão explícita para Number
+        origin_address: "Rua A, 123",
+        origin_latitude: 0,
+        origin_longitude: 0,
+        destination_address: "Rua B, 456",
+        destination_latitude: 0,
+        destination_longitude: 0,
+        departure_time: new Date().toISOString(),
+        available_seats: 3,
+      };
 
-       const response = await request(app)
-         .post("/rides")
-         .set("Authorization", `Bearer ${token2}`)
-         .send(rideData);
+      const response = await request(app)
+        .post("/rides")
+        .set("Authorization", `Bearer ${token2}`)
+        .send(rideData);
 
-       expect(response.status).toBe(400);
-       expect(response.body.error).toBe("Veículo não encontrado ou não pertence ao motorista.");
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe(
+        "Veículo não encontrado ou não pertence ao motorista."
+      );
     });
   });
 });

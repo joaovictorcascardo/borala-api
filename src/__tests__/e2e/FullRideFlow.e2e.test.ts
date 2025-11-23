@@ -19,18 +19,21 @@ describe("E2E: Fluxo Completo de Carona", () => {
     const motoristaUser = {
       name: "Motorista João",
       email: "joao@motorista.com",
-      password: "123",
+      password: "123456",
       birth_date: "1990-01-01",
       phone: 11999991111,
     };
 
     await request(app).post("/users").send(motoristaUser).expect(201);
 
-    const loginMotorista = await request(app).post("/authenticator/sessions").send({
-      email: motoristaUser.email,
-      password: motoristaUser.password,
-    }).expect(200);
-    
+    const loginMotorista = await request(app)
+      .post("/authenticator/sessions")
+      .send({
+        email: motoristaUser.email,
+        password: motoristaUser.password,
+      })
+      .expect(200);
+
     const tokenMotorista = loginMotorista.body.token;
     const idMotorista = loginMotorista.body.user.id;
 
@@ -46,42 +49,45 @@ describe("E2E: Fluxo Completo de Carona", () => {
         seats: 4,
       })
       .expect(201);
-    
+
     const idVeiculo = veiculoRes.body.id;
 
     const caronaRes = await request(app)
       .post("/rides")
       .set("Authorization", `Bearer ${tokenMotorista}`)
       .send({
-        vehicle_id: idVeiculo,
+        vehicle_id: Number(idVeiculo),
         origin_address: "São Paulo",
         origin_latitude: -23.55,
         origin_longitude: -46.63,
         destination_address: "Rio de Janeiro",
-        destination_latitude: -22.90,
+        destination_latitude: -22.9,
         destination_longitude: -43.17,
         departure_time: new Date().toISOString(),
         available_seats: 3,
         automatic_approval: false,
       })
       .expect(201);
-    
+
     const idCarona = caronaRes.body.id;
 
     const passageiroUser = {
       name: "Passageira Maria",
       email: "maria@passageira.com",
-      password: "123",
+      password: "123456",
       birth_date: "1995-05-05",
       phone: 11999992222,
     };
 
     await request(app).post("/users").send(passageiroUser).expect(201);
 
-    const loginPassageiro = await request(app).post("/authenticator/sessions").send({
-      email: passageiroUser.email,
-      password: passageiroUser.password,
-    }).expect(200);
+    const loginPassageiro = await request(app)
+      .post("/authenticator/sessions")
+      .send({
+        email: passageiroUser.email,
+        password: passageiroUser.password,
+      })
+      .expect(200);
 
     const tokenPassageiro = loginPassageiro.body.token;
 
@@ -90,7 +96,7 @@ describe("E2E: Fluxo Completo de Carona", () => {
       .set("Authorization", `Bearer ${tokenPassageiro}`)
       .send({ seats_booked: 1 })
       .expect(201);
-    
+
     const idReserva = reservaRes.body.id;
     expect(reservaRes.body.status).toBe("PENDING");
 
@@ -99,8 +105,14 @@ describe("E2E: Fluxo Completo de Carona", () => {
       .set("Authorization", `Bearer ${tokenMotorista}`)
       .send({ status: "CONFIRMED" })
       .expect(200);
-    
+
     expect(confirmacaoRes.body.status).toBe("CONFIRMED");
+
+    await request(app)
+      .patch(`/rides/${idCarona}/status`)
+      .set("Authorization", `Bearer ${tokenMotorista}`)
+      .send({ status: "COMPLETED" })
+      .expect(200);
 
     const avaliacaoRes = await request(app)
       .post(`/rides/${idCarona}/reviews`)
@@ -111,7 +123,7 @@ describe("E2E: Fluxo Completo de Carona", () => {
         comment: "Ótima viagem! Motorista seguro.",
       })
       .expect(201);
-    
+
     expect(avaliacaoRes.body.rating).toBe(5);
   });
 });
