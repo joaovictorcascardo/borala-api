@@ -4,7 +4,7 @@ const config: Config = {
   preset: "ts-jest",
   testEnvironment: "node",
   clearMocks: true,
-  testMatch: ["**/src/**/*.test.ts"],
+  testMatch: ["<rootDir>/test/**/*.test.ts"],
 };
 
 export default config;

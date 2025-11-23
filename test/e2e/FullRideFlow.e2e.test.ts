@@ -1,6 +1,6 @@
 import request from "supertest";
-import { app } from "../../app";
-import { db } from "../../database/connection";
+import { app } from "../../src/app";
+import { db } from "../../src/database/connection";
 
 describe("E2E: Fluxo Completo de Carona", () => {
   beforeAll(async () => {

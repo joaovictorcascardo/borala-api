@@ -1,6 +1,6 @@
 import request from "supertest";
-import { app } from "../../app";
-import { db } from "../../database/connection";
+import { app } from "../../src/app";
+import { db } from "../../src/database/connection";
 
 describe("Vehicle Controller", () => {
   beforeAll(async () => {
@@ -60,8 +60,14 @@ describe("Vehicle Controller", () => {
     it("deve retornar 409 se a placa já estiver cadastrada", async () => {
       token = await loginUser();
 
-      await request(app).post("/vehicles").set("Authorization", `Bearer ${token}`).send(vehicleData);
-      const response = await request(app).post("/vehicles").set("Authorization", `Bearer ${token}`).send(vehicleData);
+      await request(app)
+        .post("/vehicles")
+        .set("Authorization", `Bearer ${token}`)
+        .send(vehicleData);
+      const response = await request(app)
+        .post("/vehicles")
+        .set("Authorization", `Bearer ${token}`)
+        .send(vehicleData);
 
       expect(response.status).toBe(409);
       expect(response.body.error).toBe("Veículo com esta placa já cadastrado.");
@@ -83,7 +89,10 @@ describe("Vehicle Controller", () => {
   describe("GET /vehicles", () => {
     it("deve listar os veículos do usuário logado", async () => {
       token = await loginUser();
-      await request(app).post("/vehicles").set("Authorization", `Bearer ${token}`).send(vehicleData);
+      await request(app)
+        .post("/vehicles")
+        .set("Authorization", `Bearer ${token}`)
+        .send(vehicleData);
 
       const response = await request(app)
         .get("/vehicles")

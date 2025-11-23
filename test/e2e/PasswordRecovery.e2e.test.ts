@@ -1,6 +1,6 @@
 import request from "supertest";
-import { app } from "../../app";
-import { db } from "../../database/connection";
+import { app } from "../../src/app";
+import { db } from "../../src/database/connection";
 import crypto from "crypto";
 
 describe("E2E: Fluxo de Recuperação de Senha", () => {
@@ -33,16 +33,17 @@ describe("E2E: Fluxo de Recuperação de Senha", () => {
       .expect(204);
 
     const tokenBruto = "token-simulado-reset";
-    const tokenHash = crypto.createHash("sha256").update(tokenBruto).digest("hex");
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(tokenBruto)
+      .digest("hex");
     const expiraEm = new Date();
     expiraEm.setHours(expiraEm.getHours() + 1);
 
-    await db("users")
-      .where({ email: dadosUsuario.email })
-      .update({
-        password_reset_token: tokenHash,
-        password_reset_expires: expiraEm,
-      });
+    await db("users").where({ email: dadosUsuario.email }).update({
+      password_reset_token: tokenHash,
+      password_reset_expires: expiraEm,
+    });
 
     const novaSenha = "senhanova123";
 
@@ -62,7 +63,7 @@ describe("E2E: Fluxo de Recuperação de Senha", () => {
         password: novaSenha,
       })
       .expect(200);
-    
+
     expect(loginRes.body).toHaveProperty("token");
 
     await request(app)

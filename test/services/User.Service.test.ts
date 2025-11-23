@@ -1,8 +1,8 @@
-import UserService from "../User.Service";
-import { UserData } from "../../data/User.Data";
+import UserService from "../../src/services/User.Service";
+import { UserData } from "../../src/data/User.Data";
 import bcrypt from "bcryptjs";
 
-jest.mock("../../data/User.Data");
+jest.mock("../../src/data/User.Data");
 jest.mock("bcryptjs");
 
 describe("User Service", () => {
@@ -30,7 +30,9 @@ describe("User Service", () => {
 
       const result = await UserService.create(userData);
 
-      expect(UserData.prototype.existingUser).toHaveBeenCalledWith(userData.email);
+      expect(UserData.prototype.existingUser).toHaveBeenCalledWith(
+        userData.email
+      );
       expect(bcrypt.hash).toHaveBeenCalledWith(userData.password, 10);
       expect(UserData.prototype.createUser).toHaveBeenCalledWith(
         userData.name,
@@ -52,9 +54,9 @@ describe("User Service", () => {
 
       (UserData.prototype.existingUser as jest.Mock).mockResolvedValue(1);
 
-      await expect(UserService.create(userData))
-        .rejects
-        .toThrow("Este e-mail já está em uso.");
+      await expect(UserService.create(userData)).rejects.toThrow(
+        "Este e-mail já está em uso."
+      );
 
       expect(UserData.prototype.createUser).not.toHaveBeenCalled();
     });

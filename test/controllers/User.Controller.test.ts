@@ -1,6 +1,6 @@
 import request from "supertest";
-import { app } from "../../app";
-import { db } from "../../database/connection";
+import { app } from "../../src/app";
+import { db } from "../../src/database/connection";
 
 describe("User Controller", () => {
   beforeAll(async () => {
@@ -69,10 +69,12 @@ describe("User Controller", () => {
       const userResponse = await request(app).post("/users").send(userData);
       const userId = userResponse.body.id;
 
-      const loginResponse = await request(app).post("/authenticator/sessions").send({
-        email: userData.email,
-        password: userData.password,
-      });
+      const loginResponse = await request(app)
+        .post("/authenticator/sessions")
+        .send({
+          email: userData.email,
+          password: userData.password,
+        });
       const token = loginResponse.body.token;
 
       const response = await request(app)
@@ -93,10 +95,12 @@ describe("User Controller", () => {
   describe("PUT /users/me", () => {
     it("deve atualizar o perfil do usuário logado", async () => {
       await request(app).post("/users").send(userData);
-      const loginResponse = await request(app).post("/authenticator/sessions").send({
-        email: userData.email,
-        password: userData.password,
-      });
+      const loginResponse = await request(app)
+        .post("/authenticator/sessions")
+        .send({
+          email: userData.email,
+          password: userData.password,
+        });
       const token = loginResponse.body.token;
 
       const updateData = {

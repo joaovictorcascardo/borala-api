@@ -1,13 +1,13 @@
-import ReviewService from "../Review.Service";
-import { ReviewData } from "../../data/Review.Data";
-import { RideData } from "../../data/Ride.Data";
-import { UserData } from "../../data/User.Data";
-import { BookingData } from "../../data/Booking.Data";
+import ReviewService from "../../src/services/Review.Service";
+import { ReviewData } from "../../src/data/Review.Data";
+import { RideData } from "../../src/data/Ride.Data";
+import { UserData } from "../../src/data/User.Data";
+import { BookingData } from "../../src/data/Booking.Data";
 
-jest.mock("../../data/Review.Data");
-jest.mock("../../data/Ride.Data");
-jest.mock("../../data/User.Data");
-jest.mock("../../data/Booking.Data");
+jest.mock("../../src/data/Review.Data");
+jest.mock("../../src/data/Ride.Data");
+jest.mock("../../src/data/User.Data");
+jest.mock("../../src/data/Booking.Data");
 
 describe("Review Service", () => {
   beforeEach(() => {

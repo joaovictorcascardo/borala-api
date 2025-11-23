@@ -1,9 +1,9 @@
-import RideService from "../Ride.Service";
-import { RideData } from "../../data/Ride.Data";
-import { VehicleData } from "../../data/Vehicle.Data";
+import RideService from "../../src/services/Ride.Service";
+import { RideData } from "../../src/data/Ride.Data";
+import { VehicleData } from "../../src/data/Vehicle.Data";
 
-jest.mock("../../data/Ride.Data");
-jest.mock("../../data/Vehicle.Data");
+jest.mock("../../src/data/Ride.Data");
+jest.mock("../../src/data/Vehicle.Data");
 
 describe("Ride Service", () => {
   beforeEach(() => {
@@ -24,8 +24,14 @@ describe("Ride Service", () => {
     };
 
     it("deve criar carona se o veículo pertencer ao motorista", async () => {
-      (VehicleData.prototype.findByIdAndUserId as jest.Mock).mockResolvedValue({ id: 1, user_id: 100 });
-      (RideData.prototype.create as jest.Mock).mockResolvedValue({ id: 1, ...rideDTO });
+      (VehicleData.prototype.findByIdAndUserId as jest.Mock).mockResolvedValue({
+        id: 1,
+        user_id: 100,
+      });
+      (RideData.prototype.create as jest.Mock).mockResolvedValue({
+        id: 1,
+        ...rideDTO,
+      });
 
       const result = await RideService.create(100, rideDTO);
 
@@ -34,11 +40,14 @@ describe("Ride Service", () => {
     });
 
     it("deve lançar erro se o veículo não for encontrado ou não pertencer ao motorista", async () => {
-      (VehicleData.prototype.findByIdAndUserId as jest.Mock).mockResolvedValue(null);
+      (VehicleData.prototype.findByIdAndUserId as jest.Mock).mockResolvedValue(
+        null
+      );
 
-      await expect(RideService.create(100, rideDTO))
-        .rejects.toThrow("Veículo não encontrado ou não pertence ao motorista.");
-      
+      await expect(RideService.create(100, rideDTO)).rejects.toThrow(
+        "Veículo não encontrado ou não pertence ao motorista."
+      );
+
       expect(RideData.prototype.create).not.toHaveBeenCalled();
     });
   });
