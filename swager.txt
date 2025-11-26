@@ -1,0 +1,1046 @@
+openapi: 3.0.0
+info:
+  title: Borala API - Sistema de Caronas (Ride-Sharing)
+  description: |
+    Documentação final e precisa da API Borala, cobrindo todos os endpoints de Autenticação, Usuários, Caronas, Veículos e Reservas.
+    
+    A API segue a arquitetura RESTful, utilizando autenticação via token (Bearer/JWT).
+  version: v1.0.0
+servers:
+  - url: http://localhost:3333
+    description: Servidor de Produção
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Autenticação
+    description: Cadastro, Login e Gestão de Senhas
+  - name: Usuários
+    description: Perfil próprio e visualização de perfis públicos
+  - name: Caronas (Rides)
+    description: Criação, listagem, busca e gestão de viagens
+  - name: Veículos
+    description: Cadastro, consulta e manutenção de veículos do motorista
+  - name: Reservas (Bookings) e Avaliações
+    description: Confirmação de vaga, gestão de reservas e feedback
+
+paths:
+  # --- ROTA DE AUTENTICAÇÃO (/auth) ---
+  /sessions:
+    post:
+      tags:
+        - Autenticação
+      summary: Cria uma sessão (Login)
+      description: Realiza o login do usuário e retorna o token de autenticação (JWT).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginCredentials'
+      responses:
+        '200':
+          description: Login bem-sucedido. Retorna o token e os dados do usuário.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccess'
+        '400':
+          description: Erro de validação ou credenciais incorretas.
+
+  /forgot-password:
+    post:
+      tags:
+        - Autenticação
+      summary: Solicita recuperação de senha
+      description: Envia um e-mail de recuperação de senha para o usuário.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+              required:
+                - email
+      responses:
+        '200':
+          description: E-mail de recuperação enviado (ou será enviado, se o e-mail existir, por segurança).
+        '400':
+          description: E-mail inválido.
+
+  /reset-password:
+    post:
+      tags:
+        - Autenticação
+      summary: Redefine a senha
+      description: Permite redefinir a senha usando o token de recuperação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordData'
+      responses:
+        '200':
+          description: Senha redefinida com sucesso.
+        '400':
+          description: Token inválido ou expirado.
+
+  # --- ROTAS DE USUÁRIO (/users) ---
+  /users:
+    post:
+      tags:
+        - Usuários
+      summary: Cria um novo usuário
+      description: Realiza o cadastro de um novo usuário na plataforma.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+      responses:
+        '201':
+          description: Usuário criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '409':
+          description: Conflito. E-mail já está em uso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409'
+        '500':
+          description: Erro interno ao criar o usuário.
+
+  /users/me:
+    get:
+      tags:
+        - Usuários
+      summary: Obtém o perfil do usuário autenticado
+      description: Retorna os dados completos do perfil do usuário logado.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Perfil retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Usuário não autenticado (Token inválido ou ausente).
+
+    put:
+      tags:
+        - Usuários
+      summary: Atualiza o perfil do usuário autenticado
+      description: Permite a atualização dos dados do próprio perfil.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+      responses:
+        '200':
+          description: Perfil atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Usuário não autenticado.
+        '500':
+          description: Erro interno ao atualizar o usuário.
+
+  /users/me/rides:
+    get:
+      tags:
+        - Caronas (Rides)
+        - Usuários
+      summary: Lista as caronas criadas pelo usuário autenticado (Motorista)
+      description: Retorna uma lista paginada de caronas onde o usuário logado é o motorista.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Lista de caronas retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ride'
+        '404':
+          description: Usuário não possui nenhuma carona.
+
+  /users/me/avatar:
+    patch:
+      tags:
+        - Usuários
+      summary: Altera o avatar do usuário autenticado
+      description: Faz o upload de um novo arquivo de imagem para ser usado como avatar.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: O arquivo de imagem a ser enviado.
+              required:
+                - file
+      responses:
+        '200':
+          description: Avatar atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Arquivo não enviado no campo "file".
+        '401':
+          description: Não autorizado.
+
+  /users/{id}:
+    get:
+      tags:
+        - Usuários
+      summary: Obtém um perfil público de usuário por ID
+      description: Retorna os dados públicos de um usuário específico.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do usuário a ser consultado.
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Perfil público encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Usuário não encontrado.
+
+  /users/{id}/reviews:
+    get:
+      tags:
+        - Reservas (Bookings) e Avaliações
+        - Usuários
+      summary: Lista avaliações recebidas por um usuário
+      description: Retorna uma lista de todas as avaliações que um usuário recebeu.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do usuário cujas avaliações serão listadas.
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Lista de avaliações retornada.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+        '404':
+          description: Usuário não encontrado.
+  
+  # --- ROTAS DE CARONAS (/rides) ---
+  /rides:
+    post:
+      tags:
+        - Caronas (Rides)
+      summary: Cria uma nova carona
+      description: Cria uma nova viagem, onde o usuário autenticado atua como motorista.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRide'
+      responses:
+        '201':
+          description: Carona criada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ride'
+        '400':
+          description: Dados inválidos, veículo não encontrado/não pertence ao motorista, ou evento não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '401':
+          description: Não autorizado.
+          
+    get:
+      tags:
+        - Caronas (Rides)
+      summary: Lista e busca caronas disponíveis com filtros
+      description: Retorna uma lista paginada de caronas baseada em filtros de busca.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - name: destination
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtra por destino (busca parcial).
+        - name: origin
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtra por origem (busca parcial).
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filtra por data de partida (formato YYYY-MM-DD).
+        - name: maxCost
+          in: query
+          required: false
+          schema:
+            type: number
+            format: float
+          description: Custo máximo da carona por passageiro.
+        - name: orderBy
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [price, departureTime]
+          description: Campo para ordenação dos resultados.
+        - name: orderDirection
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+          description: Direção da ordenação (ascendente ou descendente).
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [PENDING, ACTIVE, IN_PROGRESS, COMPLETED, CANCELLED]
+          description: Filtra por status da carona.
+      responses:
+        '200':
+          description: Lista de caronas retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ride'
+        '404':
+          description: Nenhuma carona encontrada com os filtros fornecidos.
+        '500':
+          description: Erro interno do servidor.
+
+  /rides/{id}:
+    get:
+      tags:
+        - Caronas (Rides)
+      summary: Obtém detalhes de uma carona por ID
+      description: Retorna todos os detalhes de uma carona específica.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da carona.
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Carona encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ride'
+        '404':
+          description: Nenhuma corrida encontrada com este ID.
+
+  /rides/{rideId}/bookings:
+    post:
+      tags:
+        - Reservas (Bookings) e Avaliações
+      summary: Reserva uma vaga na carona
+      description: O usuário autenticado solicita ou confirma uma reserva na carona especificada.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: rideId
+          in: path
+          required: true
+          description: ID da carona a ser reservada.
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBooking'
+      responses:
+        '201':
+          description: Reserva criada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '400':
+          description: Reserva inválida, assentos insuficientes, ou outras regras de negócio violadas.
+
+  /rides/{rideId}/reviews:
+    post:
+      tags:
+        - Reservas (Bookings) e Avaliações
+      summary: Adiciona uma avaliação para a carona
+      description: Permite ao usuário autenticado avaliar uma carona concluída.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: rideId
+          in: path
+          required: true
+          description: ID da carona a ser avaliada.
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReview'
+      responses:
+        '201':
+          description: Avaliação criada com sucesso.
+
+  /rides/{id}/status:
+    patch:
+      tags:
+        - Caronas (Rides)
+      summary: Atualiza o status de uma carona (apenas Motorista)
+      description: Permite ao motorista iniciar (`IN_PROGRESS`), finalizar (`COMPLETED`) ou cancelar (`CANCELLED`) a carona.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da carona a ser alterada.
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRideStatus'
+      responses:
+        '200':
+          description: Status da carona atualizado com sucesso.
+        '400':
+          description: Status inválido na requisição.
+        '403':
+          description: Você não tem permissão para alterar esta carona (não é o motorista).
+        '404':
+          description: Carona não encontrada.
+
+  # --- ROTAS DE VEÍCULOS (/vehicles) ---
+  /vehicles:
+    get:
+      tags:
+        - Veículos
+      summary: Lista todos os veículos do usuário autenticado
+      description: Retorna a lista paginada de veículos cadastrados pelo motorista logado.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Lista de veículos retornada.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vehicle'
+        '401':
+          description: Não autorizado.
+        '404':
+          description: Você não possui nenhum veículo.
+          
+    post:
+      tags:
+        - Veículos
+      summary: Cadastra um novo veículo
+      description: Adiciona um novo veículo à lista do usuário.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVehicle'
+      responses:
+        '201':
+          description: Veículo cadastrado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '409':
+          description: Conflito. Veículo com esta placa já cadastrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Vehicle'
+
+  /vehicles/{id}:
+    put:
+      tags:
+        - Veículos
+      summary: Atualiza um veículo
+      description: Atualiza os dados de um veículo específico.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do veículo a ser atualizado.
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVehicle'
+      responses:
+        '200':
+          description: Veículo atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '403':
+          description: Operação não permitida (veículo não pertence ao usuário).
+        '404':
+          description: Veículo não encontrado.
+          
+    delete:
+      tags:
+        - Veículos
+      summary: Deleta um veículo
+      description: Remove um veículo da lista do usuário.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do veículo a ser deletado.
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '204':
+          description: Veículo deletado com sucesso.
+        '403':
+          description: Operação não permitida (veículo vinculado a uma carona ativa ou não pertence ao usuário).
+        '404':
+          description: Veículo não encontrado.
+
+  # --- ROTAS DE RESERVAS (/bookings) ---
+  /bookings/me:
+    get:
+      tags:
+        - Reservas (Bookings) e Avaliações
+      summary: Lista as reservas do usuário autenticado (Passageiro)
+      description: Retorna todas as reservas de caronas feitas pelo usuário logado (passageiro).
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de reservas retornada.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        '401':
+          description: Não autorizado.
+
+  /bookings/{id}:
+    patch:
+      tags:
+        - Reservas (Bookings) e Avaliações
+      summary: Atualiza o status de uma reserva
+      description: Permite ao motorista (CONFIRMED) ou passageiro (CANCELLED) alterar o status da reserva.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da reserva a ser atualizada.
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBookingStatus'
+      responses:
+        '200':
+          description: Status da reserva atualizado com sucesso.
+        '403':
+          description: Permissão negada ou regras de negócio violadas (ex. reserva não localizada, status inválido).
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT para autenticação de requisições.
+
+  parameters:
+    page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 1
+      description: Número da página a ser retornada.
+    limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 5
+      description: Quantidade máxima de itens por página.
+
+  schemas:
+    # --- SCHEMAS DE AUTENTICAÇÃO ---
+    LoginCredentials:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: 'user@borala.com.br'
+        password:
+          type: string
+          format: password
+          example: 'senha_secreta123'
+      required:
+        - email
+        - password
+
+    AuthSuccess:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Token JWT para ser usado em requisições futuras (Bearer Auth).
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        user:
+          $ref: '#/components/schemas/User'
+
+    ResetPasswordData:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Token de recuperação de senha enviado por e-mail.
+        newPassword:
+          type: string
+          format: password
+          description: A nova senha do usuário.
+      required:
+        - token
+        - newPassword
+
+    # --- SCHEMAS DE USUÁRIO ---
+    CreateUser:
+      type: object
+      properties:
+        name:
+          type: string
+          example: João Victor
+        email:
+          type: string
+          format: email
+          example: joao.victor@email.com
+        password:
+          type: string
+          format: password
+          example: SenhaSegura123!
+        cpf:
+          type: string
+          example: 123.456.789-00
+      required:
+        - name
+        - email
+        - password
+        - cpf
+        
+    UpdateUser:
+      type: object
+      properties:
+        name:
+          type: string
+          example: João C.
+        password:
+          type: string
+          format: password
+          example: nova_senha456
+        
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: ID interno do usuário.
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        avatarUrl:
+          type: string
+          format: url
+          description: URL pública para a imagem do avatar.
+          nullable: true
+        averageRating:
+          type: number
+          format: float
+          description: Nota média de avaliação recebida (0.0 a 5.0).
+      required:
+        - id
+        - name
+        - email
+        
+    # --- SCHEMAS DE VEÍCULO ---
+    CreateVehicle:
+      type: object
+      properties:
+        brand:
+          type: string
+          example: Fiat
+        model:
+          type: string
+          example: Palio
+        color:
+          type: string
+          example: Prata
+        license_plate:
+          type: string
+          example: ABC-1234
+        year:
+          type: integer
+          example: 2015
+        seats:
+          type: integer
+          example: 4
+      required:
+        - brand
+        - model
+        - color
+        - license_plate
+        - year
+        - seats
+        
+    UpdateVehicle:
+      type: object
+      properties:
+        brand:
+          type: string
+          example: Fiat
+        model:
+          type: string
+          example: Palio
+        color:
+          type: string
+          example: Preto
+        license_plate:
+          type: string
+          example: ABC-1234
+        year:
+          type: integer
+          example: 2015
+        seats:
+          type: integer
+          example: 4
+
+    Vehicle:
+      allOf:
+        - $ref: '#/components/schemas/CreateVehicle'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+            userId:
+              type: integer
+              format: int32
+          required:
+            - id
+            - userId
+            
+    # --- SCHEMAS DE CARONA (RIDE) ---
+    CreateRide:
+      type: object
+      properties:
+        vehicleId:
+          type: integer
+          format: int32
+          description: ID do veículo que será usado para a carona (deve pertencer ao motorista).
+        origin:
+          type: string
+          description: Ponto de partida da carona (ex. Endereço completo ou coordenada).
+        destination:
+          type: string
+          description: Ponto de chegada da carona.
+        departureTime:
+          type: string
+          format: date-time
+          description: Horário de partida da carona.
+        price:
+          type: number
+          format: float
+          description: Preço por passageiro.
+        availableSeats:
+          type: integer
+          format: int32
+          description: Número de assentos disponíveis para reserva.
+      required:
+        - vehicleId
+        - origin
+        - destination
+        - departureTime
+        - price
+        - availableSeats
+        
+    UpdateRideStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [IN_PROGRESS, COMPLETED, CANCELLED]
+          example: IN_PROGRESS
+      required:
+        - status
+
+    Ride:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        driverId:
+          type: integer
+          format: int32
+        origin:
+          type: string
+        destination:
+          type: string
+        departureTime:
+          type: string
+          format: date-time
+        price:
+          type: number
+          format: float
+        availableSeats:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [PENDING, ACTIVE, IN_PROGRESS, COMPLETED, CANCELLED]
+          example: ACTIVE
+      required:
+        - id
+        - driverId
+        - origin
+        - destination
+        - departureTime
+        - price
+        - availableSeats
+        - createdAt
+        - status
+            
+    # --- SCHEMAS DE RESERVA (BOOKING) e AVALIAÇÃO (REVIEW) ---
+    CreateBooking:
+      type: object
+      properties:
+        seats_booked:
+          type: integer
+          format: int32
+          description: Número de assentos que o passageiro deseja reservar.
+          example: 1
+      required:
+        - seats_booked
+        
+    UpdateBookingStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [CONFIRMED, CANCELLED] # Status possíveis para o PATCH
+          example: CONFIRMED
+      required:
+        - status
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        rideId:
+          type: integer
+          format: int32
+        passengerId:
+          type: integer
+          format: int32
+        seats_booked: # Corrigido para seats_booked
+          type: integer
+          format: int32
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, CANCELLED]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - rideId
+        - passengerId
+        - seats_booked
+        - status
+        - createdAt
+        
+    CreateReview:
+      type: object
+      properties:
+        rating:
+          type: integer
+          format: int32
+          description: Nota dada na avaliação (1 a 5 estrelas).
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          description: Comentário opcional sobre a carona/motorista.
+          nullable: true
+      required:
+        - rating
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        rideId:
+          type: integer
+          format: int32
+        reviewerId:
+          type: integer
+          format: int32
+        reviewedUserId:
+          type: integer
+          format: int32
+        rating:
+          type: integer
+          format: int32
+        comment:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - rideId
+        - reviewerId
+        - reviewedUserId
+        - rating
+        - createdAt
+        
+    # --- SCHEMAS DE ERROS PERSONALIZADOS ---
+    Error400:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Veículo não encontrado ou não pertence ao motorista."
+    Error409:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Este e-mail já está em uso."
+    Error409Vehicle:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Veículo com esta placa já cadastrado."
