@@ -49,3 +49,10 @@
     ```
 
 O servidor estará rodando em `http://localhost:3333`.
+
+
+## 📘 Documentação Completa (Swagger)
+
+Para uma visão detalhada de todos os campos, schemas, possíveis erros (status codes) e validações, acesse a documentação completa no arquivo borala_api_swagger.yaml.
+
+Este arquivo pode ser importado em ferramentas como **Swagger UI**, **Postman** ou **Insomnia** para testar os endpoints de forma interativa.
