@@ -1,0 +1,862 @@
+openapi: 3.0.0
+info:
+  title: Borala API - Sistema de Caronas
+  description: |
+    API completa para gestão de caronas, reservas, veículos, usuários, avaliações e eventos.
+
+    Possui autenticação via JWT e segue rigorosamente o padrão **snake_case** em todos os payloads,
+    alinhado aos validadores Zod usados na API.
+
+    Esta documentação foi aprimorada para um nível profissional, incluindo:
+    - Schemas reutilizáveis
+    - Exemplos detalhados
+    - Respostas documentadas
+    - Códigos de erro padronizados
+  version: "1.1.0"
+
+servers:
+  - url: http://localhost:3333
+    description: Ambiente de Desenvolvimento
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Autenticação
+  - name: Usuários
+  - name: Veículos
+  - name: Caronas
+  - name: Reservas
+  - name: Avaliações
+  - name: Eventos
+
+paths:
+
+  ############################################
+  # AUTENTICAÇÃO
+  ############################################
+
+  /authenticator/sessions:
+    post:
+      tags: [Autenticação]
+      summary: Login
+      description: Realiza autenticação do usuário e retorna token JWT + perfil básico.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: "usuario@email.com"
+              password: "123456"
+      responses:
+        '200':
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /authenticator/forgot-password:
+    post:
+      tags: [Autenticação]
+      summary: Solicitar recuperação de senha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '204':
+          description: Email enviado com instruções
+
+  /authenticator/reset-password:
+    post:
+      tags: [Autenticação]
+      summary: Redefinir senha com token enviado por email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '204':
+          description: Senha redefinida com sucesso
+
+
+  ############################################
+  # USUÁRIOS
+  ############################################
+
+  /users:
+    post:
+      tags: [Usuários]
+      summary: Criar conta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+      responses:
+        '201':
+          description: Usuário criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '409':
+          description: Email já cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/me:
+    get:
+      tags: [Usuários]
+      summary: Obter meu perfil
+      responses:
+        '200':
+          description: Perfil do usuário autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    put:
+      tags: [Usuários]
+      summary: Atualizar meu perfil
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        '200':
+          description: Perfil atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/me/avatar:
+    patch:
+      tags: [Usuários]
+      summary: Upload de avatar
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Avatar atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/{id}:
+    get:
+      tags: [Usuários]
+      summary: Perfil público de um usuário
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Perfil público encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+
+  /users/{id}/reviews:
+    get:
+      tags: [Usuários, Avaliações]
+      summary: Listar avaliações recebidas pelo usuário
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Lista de avaliações
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewListResponse'
+
+
+  ############################################
+  # VEÍCULOS
+  ############################################
+
+  /vehicles:
+    get:
+      tags: [Veículos]
+      summary: Listar meus veículos
+      responses:
+        '200':
+          description: Lista de veículos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleListResponse'
+    post:
+      tags: [Veículos]
+      summary: Cadastrar veículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleCreateRequest'
+      responses:
+        '201':
+          description: Veículo criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+
+  /vehicles/{id}:
+    put:
+      tags: [Veículos]
+      summary: Atualizar veículo
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleUpdateRequest'
+      responses:
+        '200':
+          description: Veículo atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+    delete:
+      tags: [Veículos]
+      summary: Remover veículo
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '204':
+          description: Removido com sucesso
+
+
+  ############################################
+  # CARONAS
+  ############################################
+
+  /rides:
+    get:
+      tags: [Caronas]
+      summary: Buscar caronas disponíveis
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: origin
+          in: query
+          schema: { type: string }
+          description: Filtro de origem (parcial)
+        - name: destination
+          in: query
+          schema: { type: string }
+          description: Filtro de destino (parcial)
+        - name: date
+          in: query
+          schema: { type: string, format: date }
+          description: Filtro de data (YYYY-MM-DD)
+        - name: maxCost
+          in: query
+          schema: { type: number }
+          description: Custo máximo total estimado
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED]
+        - name: orderBy
+          in: query
+          schema:
+            type: string
+            enum: [estimated_total_cost, departure_time]
+          description: Campo de ordenação
+        - name: orderDirection
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Direção (ascendente/descendente)
+      responses:
+        '200':
+          description: Lista de caronas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RideListResponse'
+
+    post:
+      tags: [Caronas]
+      summary: Criar carona
+      description: Criar uma nova carona com origem, destino, custo e horário.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RideCreateRequest'
+      responses:
+        '201':
+          description: Carona criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ride'
+
+  /rides/{id}:
+    get:
+      tags: [Caronas]
+      summary: Detalhes da carona
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Detalhes encontrados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ride'
+
+  /rides/{id}/status:
+    patch:
+      tags: [Caronas]
+      summary: Alterar status da carona (motorista)
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RideStatusUpdateRequest'
+      responses:
+        '200':
+          description: Status atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ride'
+
+
+  ############################################
+  # RESERVAS
+  ############################################
+
+  /rides/{rideId}/bookings:
+    post:
+      tags: [Reservas]
+      summary: Solicitar reserva em carona
+      parameters:
+        - in: path
+          name: rideId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingCreateRequest'
+      responses:
+        '201':
+          description: Reserva criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+
+  /bookings/me:
+    get:
+      tags: [Reservas]
+      summary: Minhas reservas como passageiro
+      responses:
+        '200':
+          description: Lista de reservas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingListResponse'
+
+  /bookings/{id}:
+    patch:
+      tags: [Reservas]
+      summary: Atualizar status da reserva
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingStatusUpdateRequest'
+      responses:
+        '200':
+          description: Reserva atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+
+
+  ############################################
+  # AVALIAÇÕES
+  ############################################
+
+  /rides/{rideId}/reviews:
+    post:
+      tags: [Avaliações]
+      summary: Criar avaliação
+      parameters:
+        - in: path
+          name: rideId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewCreateRequest'
+      responses:
+        '201':
+          description: Avaliação criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+
+
+  ############################################
+  # EVENTOS
+  ############################################
+
+  /events:
+    get:
+      tags: [Eventos]
+      summary: Listar eventos
+      responses:
+        '200':
+          description: Lista de eventos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventListResponse'
+
+    post:
+      tags: [Eventos]
+      summary: Criar evento (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventCreateRequest'
+      responses:
+        '201':
+          description: Evento criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+
+  /events/{id}/rides:
+    get:
+      tags: [Eventos, Caronas]
+      summary: Listar caronas relacionadas ao evento
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Caronas do evento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RideListResponse'
+
+
+############################################
+# COMPONENTS
+############################################
+
+components:
+
+  ############################################
+  # SECURITY
+  ############################################
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  ############################################
+  # PARAMETERS
+  ############################################
+
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 5
+
+  ############################################
+  # SCHEMAS
+  ############################################
+
+  schemas:
+
+    ############################################################
+    # ERROS PADRÃO
+    ############################################################
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        status_code:
+          type: integer
+      example:
+        message: "Email já está em uso"
+        status_code: 409
+
+    ############################################################
+    # USUÁRIOS
+    ############################################################
+
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        birth_date: { type: string, format: date }
+        phone: { type: number }
+        bio: { type: string, nullable: true }
+        avatar_url: { type: string, nullable: true }
+
+    UserPublic:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        bio: { type: string, nullable: true }
+        avatar_url: { type: string, nullable: true }
+
+    UserCreateRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - birth_date
+        - phone
+      properties:
+        name: { type: string }
+        email: { type: string }
+        password: { type: string }
+        birth_date: { type: string, format: date }
+        phone: { type: number }
+      example:
+        name: "João Victor"
+        email: "joao@email.com"
+        password: "123456"
+        birth_date: "2003-05-18"
+        phone: 31999998888
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        phone: { type: number }
+        bio: { type: string, nullable: true }
+      example:
+        name: "João Atualizado"
+        phone: 31999995555
+        bio: "Motorista há 3 anos"
+
+    ############################################################
+    # LOGIN
+    ############################################################
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string }
+        password: { type: string }
+
+    LoginResponse:
+      type: object
+      properties:
+        token: { type: string }
+        user:
+          $ref: '#/components/schemas/User'
+      example:
+        token: "jwt_token_aqui"
+        user:
+          id: 1
+          name: "João"
+          email: "joao@email.com"
+
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string }
+
+    ResetPasswordRequest:
+      type: object
+      required: [token, password, password_confirmation]
+      properties:
+        token: { type: string }
+        password: { type: string }
+        password_confirmation: { type: string }
+
+    ############################################################
+    # VEÍCULOS
+    ############################################################
+
+    Vehicle:
+      type: object
+      properties:
+        id: { type: integer }
+        brand: { type: string }
+        model: { type: string }
+        color: { type: string }
+        license_plate: { type: string }
+        year: { type: integer }
+        seats: { type: integer }
+
+    VehicleCreateRequest:
+      type: object
+      required: [brand, model, color, license_plate, year, seats]
+      properties:
+        brand: { type: string }
+        model: { type: string }
+        color: { type: string }
+        license_plate: { type: string }
+        year: { type: integer }
+        seats: { type: integer }
+
+    VehicleUpdateRequest:
+      type: object
+      properties:
+        brand: { type: string }
+        model: { type: string }
+        color: { type: string }
+        year: { type: integer }
+        seats: { type: integer }
+
+    VehicleListResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Vehicle'
+
+    ############################################################
+    # CARONAS
+    ############################################################
+
+    Ride:
+      type: object
+      properties:
+        id: { type: integer }
+        vehicle_id: { type: integer }
+        driver_id: { type: integer }
+        event_id: { type: integer, nullable: true }
+        origin_address: { type: string }
+        origin_latitude: { type: number }
+        origin_longitude: { type: number }
+        destination_address: { type: string }
+        destination_latitude: { type: number }
+        destination_longitude: { type: number }
+        departure_time: { type: string, format: date-time }
+        available_seats: { type: integer }
+        estimated_total_cost: { type: number, nullable: true }
+        status: { type: string }
+
+    RideCreateRequest:
+      type: object
+      required:
+        - vehicle_id
+        - origin_address
+        - origin_latitude
+        - origin_longitude
+        - destination_address
+        - destination_latitude
+        - destination_longitude
+        - departure_time
+        - available_seats
+      properties:
+        vehicle_id: { type: integer }
+        event_id: { type: integer, nullable: true }
+        origin_address: { type: string }
+        origin_latitude: { type: number }
+        origin_longitude: { type: number }
+        destination_address: { type: string }
+        destination_latitude: { type: number }
+        destination_longitude: { type: number }
+        departure_time: { type: string, format: date-time }
+        available_seats: { type: integer }
+        estimated_total_cost: { type: number, nullable: true }
+        additional_info: { type: string, nullable: true }
+        automatic_approval: { type: boolean, default: false }
+
+    RideStatusUpdateRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [IN_PROGRESS, COMPLETED, CANCELLED]
+
+    RideListResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Ride'
+
+    ############################################################
+    # RESERVAS
+    ############################################################
+
+    Booking:
+      type: object
+      properties:
+        id: { type: integer }
+        ride_id: { type: integer }
+        passenger_id: { type: integer }
+        seats_booked: { type: integer }
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, REJECTED, CANCELLED]
+
+    BookingCreateRequest:
+      type: object
+      required: [seats_booked]
+      properties:
+        seats_booked: { type: integer }
+
+    BookingStatusUpdateRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [CONFIRMED, REJECTED, CANCELLED]
+
+    BookingListResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Booking'
+
+    ############################################################
+    # AVALIAÇÕES
+    ############################################################
+
+    Review:
+      type: object
+      properties:
+        id: { type: integer }
+        ride_id: { type: integer }
+        reviewer_id: { type: integer }
+        reviewee_id: { type: integer }
+        rating: { type: number }
+        comment: { type: string }
+
+    ReviewCreateRequest:
+      type: object
+      required: [rating, reviewee_id]
+      properties:
+        rating: { type: number, minimum: 1, maximum: 5 }
+        comment: { type: string }
+        reviewee_id: { type: integer }
+
+    ReviewListResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Review'
+
+    ############################################################
+    # EVENTOS
+    ############################################################
+
+    Event:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        address: { type: string }
+        latitude: { type: number }
+        longitude: { type: number }
+        starts_at: { type: string, format: date-time }
+        ends_at: { type: string, format: date-time }
+        description: { type: string }
+
+    EventCreateRequest:
+      type: object
+      required:
+        - name
+        - address
+        - latitude
+        - longitude
+        - starts_at
+        - ends_at
+        - description
+      properties:
+        name: { type: string }
+        address: { type: string }
+        latitude: { type: number }
+        longitude: { type: number }
+        starts_at: { type: string, format: date-time }
+        ends_at: { type: string, format: date-time }
+        description: { type: string }
+
+    EventListResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Event'
