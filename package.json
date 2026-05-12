@@ -1,12 +1,15 @@
-{
+
+  {
   "name": "borala",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
- "scripts": {
-  "test": "cross-env NODE_ENV=test jest --detectOpenHandles -i",
-  "dev": "ts-node-dev --transpile-only --ignore-watch node_modules --respawn src/server.ts"
- },
+  "main": "dist/server.js", 
+  "scripts": {
+    "test": "cross-env NODE_ENV=test jest --detectOpenHandles -i",
+    "dev": "ts-node-dev --transpile-only --ignore-watch node_modules --respawn src/server.ts",
+    "build": "npx tsc",
+    "start": "node dist/server.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
