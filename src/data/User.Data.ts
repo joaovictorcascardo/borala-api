@@ -94,17 +94,19 @@ export class UserData{
             if (!user) {
                 return null;
             }
+            const baseUrl = process.env.BASE_URL || "http://localhost:3333";
+            const profilePictureUrl = `${baseUrl}/files/${AvatarName}`;
             if (user.profile_picture_url) {
                 const oldAvatarFilename = path.basename(user.profile_picture_url);
                 const oldAvatarFilePath = path.join(uploadConfig.directory, oldAvatarFilename);
-                await fs.stat(oldAvatarFilePath);
-                await fs.unlink(oldAvatarFilePath);
-                const profilePictureUrl = `http://localhost:3333/files/${AvatarName}`;
-                await db("users").where({ id: id }).update({ profile_picture_url: profilePictureUrl });
-                return this.findPublicProfile(id);
+                try {
+                    await fs.stat(oldAvatarFilePath);
+                    await fs.unlink(oldAvatarFilePath);
+                } catch {
+                    // arquivo antigo não encontrado, segue em frente
+                }
             }
-            const profilePictureUrl = `http://localhost:3333/files/${AvatarName}`;
-            await db('users').where({ id: id }).update({ profile_picture_url: profilePictureUrl });
+            await db("users").where({ id: id }).update({ profile_picture_url: profilePictureUrl });
             return this.findPublicProfile(id);
         }catch(error: any){
             throw new Error(error.message);   
