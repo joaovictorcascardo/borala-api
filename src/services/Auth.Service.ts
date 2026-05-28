@@ -4,7 +4,8 @@ import { StringValue } from 'ms';
 import crypto from "crypto";
 import { LoginDTO } from "../dto/AuthDTO";
 import { ResetPasswordDTO } from "../dto/AuthDTO";
-import { UserData } from "../data/User.Data"
+import { UserData } from "../data/User.Data";
+import { sendPasswordResetEmail } from "./Mailer.Service";
 
 class AuthService {
   userData = new UserData();
@@ -40,7 +41,7 @@ class AuthService {
       const expires = new Date();
       expires.setHours(expires.getHours() + 1);
       await this.userData.updateResetToken(userId as number, tokenHash, expires);
-      console.log("Reset Token: ", resetToken);
+      await sendPasswordResetEmail(email, resetToken);
     }catch(error:any){
       throw new Error(error.message);    
     }
