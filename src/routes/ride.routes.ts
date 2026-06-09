@@ -44,6 +44,12 @@ rideRoutes.post(
 );
 
 rideRoutes.get(
+  "/:id/metrics",
+  authMiddleware,
+  RideController.getMetrics
+);
+
+rideRoutes.get(
   "/:id",
   authMiddleware,
   validate(RideValidator.verifyId),
