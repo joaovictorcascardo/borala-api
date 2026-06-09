@@ -91,6 +91,15 @@ export class BookingService {
     return formattedBookings;
   }
 
+  async listByRide(rideId: number, requesterId: number) {
+    const ride = await this.rideData.findById(rideId);
+    if (!ride) throw new Error("Corrida não encontrada.");
+    if (Number(ride.driver_id) !== requesterId)
+      throw new Error("Apenas o motorista pode ver as reservas desta corrida.");
+
+    return this.bookingData.listByRide(rideId);
+  }
+
   async changeStatus(
     bookingId: number,
     userId: number,

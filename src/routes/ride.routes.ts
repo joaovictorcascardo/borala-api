@@ -30,6 +30,12 @@ rideRoutes.post(
   BookingController.create
 );
 
+rideRoutes.get(
+  "/:rideId/bookings",
+  authMiddleware,
+  BookingController.byRide
+);
+
 rideRoutes.post(
   "/:rideId/reviews",
   authMiddleware,

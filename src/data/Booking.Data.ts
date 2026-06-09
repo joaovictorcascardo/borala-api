@@ -65,6 +65,38 @@ export class BookingData {
       throw new Error(error.message);
     }
   }
+  async listByRide(rideId: number) {
+    try {
+      const rows = await db("bookings as b")
+        .where("b.ride_id", rideId)
+        .leftJoin("users as u", "u.id", "b.passenger_id")
+        .select(
+          "b.id",
+          "b.status",
+          "b.seats_booked",
+          "b.created_at",
+          "u.id as user_id",
+          "u.name as user_name",
+          "u.profile_picture_url as user_profile_picture_url"
+        )
+        .orderBy("b.created_at", "asc");
+
+      return rows.map((row: any) => ({
+        id: row.id,
+        status: row.status,
+        seats_booked: row.seats_booked,
+        created_at: row.created_at,
+        user: {
+          id: row.user_id,
+          name: row.user_name,
+          profile_picture_url: row.user_profile_picture_url,
+        },
+      }));
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
   async updateStatus(id: number, status: BookingStatus): Promise<Booking> {
     try {
       const [updatedBooking] = await db("bookings")

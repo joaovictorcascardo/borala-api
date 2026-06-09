@@ -20,6 +20,11 @@ eventsRoutes.get(
     EventController.getEvents
 );
 eventsRoutes.get(
+    "/:id",
+    validate(EventValidator.verifyId),
+    EventController.getById
+);
+eventsRoutes.get(
     "/:id/rides",
     validate(EventValidator.verifyId),
     RideController.getRidesByEventId

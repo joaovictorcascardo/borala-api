@@ -46,6 +46,27 @@ export default class BookingController {
     }
   }
 
+  static async byRide(
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<Response> {
+    try {
+      const rideId = Number(req.params.rideId);
+      const requesterId = req.user!.id;
+      const list = await BookingService.listByRide(rideId, requesterId);
+      return res.status(200).json(list);
+    } catch (err: any) {
+      if (
+        err.message.includes("não encontrada") ||
+        err.message.includes("Apenas o motorista")
+      ) {
+        return res.status(403).json({ message: err.message });
+      }
+      console.error("Erro ao listar reservas da corrida:", err);
+      return res.status(500).json({ message: "Erro interno do servidor." });
+    }
+  }
+
   static async patchStatus(
     req: AuthenticatedRequest,
     res: Response

@@ -43,7 +43,7 @@ export class RideData {
     try{
       const offset = (page - 1) * limit;
       const rides = await db("rides")
-        .select("vehicle_id", "event_id", "origin_address", "destination_address", "departure_time", "available_seats", "estimated_total_cost", "additional_info")
+        .select("id", "vehicle_id", "event_id", "origin_address", "destination_address", "departure_time", "available_seats", "estimated_total_cost", "additional_info", "status")
         .where({ driver_id })
         .limit(limit)
         .offset(offset);
@@ -52,11 +52,12 @@ export class RideData {
       throw new Error(error.message);
     }
   }
-  async getRideById(id: number): Promise<RidesMeDTO[]>{
+  async getRideById(id: number): Promise<RidesMeDTO | undefined>{
     try {
       const ride = await db("rides")
-        .select("vehicle_id", "event_id", "origin_address", "destination_address", "departure_time", "available_seats", "estimated_total_cost", "additional_info")
-        .where({ id });
+        .select("id", "vehicle_id", "event_id", "origin_address", "destination_address", "departure_time", "available_seats", "estimated_total_cost", "additional_info", "status", "driver_id", "automatic_approval", "origin_latitude", "origin_longitude", "destination_latitude", "destination_longitude")
+        .where({ id })
+        .first();
       return ride;
     } catch (error: any) {
       throw new Error(error.message);
@@ -77,7 +78,7 @@ export class RideData {
     try {
       const offset = (page - 1) * limit;
       const rides = await db("rides")
-        .select("vehicle_id", "event_id", "origin_address", "destination_address", "departure_time", "available_seats", "estimated_total_cost", "additional_info")
+        .select("id", "vehicle_id", "event_id", "origin_address", "destination_address", "departure_time", "available_seats", "estimated_total_cost", "additional_info", "status")
         .where({ event_id: event_id })
         .limit(limit)
         .offset(offset);

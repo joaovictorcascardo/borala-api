@@ -31,5 +31,17 @@ class EventController {
             return res.status(500).json({ error: "Ocorreu um erro interno ao retornar os eventos." });
         }
     }
+    async getById(req: Request, res: Response): Promise<Response> {
+        try {
+            const id = Number(req.params.id);
+            const event = await EventService.getById(id);
+            return res.status(200).json(event);
+        } catch (error: any) {
+            if (error.message === "Evento não encontrado.") {
+                return res.status(404).json({ error: error.message });
+            }
+            return res.status(500).json({ error: "Ocorreu um erro interno ao buscar o evento." });
+        }
+    }
 }
 export default new EventController();

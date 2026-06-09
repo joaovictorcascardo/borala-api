@@ -48,10 +48,10 @@ class RideService {
       throw new Error(error.message);
     }
   }
-  async getRideById(RideId: number): Promise<RidesMeDTO[]>{
+  async getRideById(RideId: number): Promise<RidesMeDTO>{
     try{
       const ride = await this.rideData.getRideById(RideId);
-      if (ride.length === 0) {
+      if (!ride) {
         throw new Error("Nenhuma corrida encontrada com este ID.");
       }
       return ride;
@@ -72,7 +72,7 @@ class RideService {
       if (upperRideStatus != "IN_PROGRESS" && upperRideStatus != "COMPLETED" && upperRideStatus != "CANCELLED"){
         throw new Error("Status invalido! O status passado deve ser: 'IN_PROGRESS', 'COMPLETED' ou 'CANCELLED'.");
       }
-      const updatedRide = await this.rideData.patchStatus(rideId, driverId, rideStatus);
+      const updatedRide = await this.rideData.patchStatus(rideId, driverId, upperRideStatus);
     
       return updatedRide;
     }catch(error:any){

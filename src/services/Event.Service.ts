@@ -1,5 +1,5 @@
 import { EventData } from "../data/Event.Data";
-import { CreateEventDTO, EventsDTO } from "../dto/EventDTO";
+import { CreateEventDTO, EventsDTO, EventDetailDTO } from "../dto/EventDTO";
 
 class EventService {
     eventData = new EventData();
@@ -24,6 +24,17 @@ class EventService {
             }
 
             return events;
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
+    async getById(id: number): Promise<EventDetailDTO> {
+        try {
+            const event = await this.eventData.getById(id);
+            if (!event) {
+                throw new Error("Evento não encontrado.");
+            }
+            return event;
         } catch (error: any) {
             throw new Error(error.message);
         }

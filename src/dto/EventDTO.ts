@@ -13,3 +13,14 @@ export interface EventsDTO {
     address: String;
     starts_at: Date;
 }
+
+export interface EventDetailDTO {
+    id: number;
+    name: String;
+    address: String;
+    latitude: number;
+    longitude: number;
+    starts_at: Date;
+    ends_at: Date;
+    description: String;
+}

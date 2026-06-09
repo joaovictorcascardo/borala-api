@@ -39,6 +39,15 @@ export class ReviewData {
           "rating",
           "comment",
         ]);
+
+      const [avgResult] = await db("reviews")
+        .where({ reviewee_id: dataReview.reviewee_id })
+        .avg("rating as avg");
+      const newAvg = Number(avgResult?.avg ?? 0);
+      await db("users")
+        .where({ id: dataReview.reviewee_id })
+        .update({ average_rating: newAvg });
+
       return review;
     } catch (error: any) {
       throw new Error(error.message);

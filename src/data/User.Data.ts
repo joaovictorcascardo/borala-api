@@ -22,19 +22,22 @@ export class UserData{
             delete user.created_at;
             delete user.updated_at;
             delete user.role;
+            const [avgResult] = await db('reviews').where({ reviewee_id: userId }).avg('rating as avg');
+            user.average_rating = avgResult?.avg ? Number(Number(avgResult.avg).toFixed(1)) : null;
             return user as UserGetMeDTO;
-            
         }catch(error: any){
             throw new Error(error.message);
         }
     }
     async findPublicProfile(userId: number): Promise<PublicUserProfileDTO | null> {
         try{
-            const user = await db('users').select('id', 'name', 'profile_picture_url', 'bio', 'average_rating').where({ id: userId }).first();
+            const user = await db('users').select('id', 'name', 'profile_picture_url', 'bio').where({ id: userId }).first();
             if (!user) {
                 return null;
             }
-            return user as PublicUserProfileDTO
+            const [avgResult] = await db('reviews').where({ reviewee_id: userId }).avg('rating as avg');
+            const average_rating = avgResult?.avg ? Number(Number(avgResult.avg).toFixed(1)) : null;
+            return { ...user, average_rating } as PublicUserProfileDTO;
         }catch(error : any){
             throw new Error(error.message);
         }

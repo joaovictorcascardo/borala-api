@@ -1,5 +1,5 @@
 import { db } from "../database/connection";
-import { CreateEventDTO, EventsDTO} from "../dto/EventDTO"; 
+import { CreateEventDTO, EventsDTO, EventDetailDTO } from "../dto/EventDTO";
 export class EventData {
     async create(data: CreateEventDTO): Promise<CreateEventDTO[]> {
         try {
@@ -33,6 +33,17 @@ export class EventData {
                 .offset(offset)
             return events;
         }catch(error: any){
+            throw new Error(error.message);
+        }
+    }
+    async getById(id: number): Promise<EventDetailDTO | undefined>{
+        try {
+            const event = await db("events")
+                .select("id", "name", "address", "latitude", "longitude", "starts_at", "ends_at", "description")
+                .where({ id })
+                .first();
+            return event;
+        } catch (error: any) {
             throw new Error(error.message);
         }
     }
