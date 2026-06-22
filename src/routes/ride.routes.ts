@@ -50,6 +50,12 @@ rideRoutes.get(
 );
 
 rideRoutes.get(
+  "/:id/map",
+  authMiddleware,
+  RideController.getMap
+);
+
+rideRoutes.get(
   "/:id",
   authMiddleware,
   validate(RideValidator.verifyId),

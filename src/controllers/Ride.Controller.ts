@@ -3,7 +3,7 @@ import { AuthenticatedRequest } from "../types/Auth";
 import { CreateRideDTO } from "../dto/RideDTO";
 import RideService from "../services/Ride.Service";
 import { rideRoutes } from "../routes/ride.routes";
-import { getRouteMetrics } from "../services/RouteMetrics.Service";
+import { getRouteMetrics, getRouteGeometry } from "../services/RouteMetrics.Service";
 
 class RideController {
   async create(req: AuthenticatedRequest, res: Response): Promise<Response> {
@@ -117,6 +117,23 @@ class RideController {
         .json({ error: "Ocorreu um erro interno ao atualizar o status dessa corrida." });
     }
   }
+  async getMap(req: Request, res: Response): Promise<Response> {
+    try {
+      const rideId = Number(req.params.id);
+      const ride = await RideService.getRideById(rideId);
+      const geometry = await getRouteGeometry(ride.origin_address, ride.destination_address);
+      if (!geometry) {
+        return res.status(422).json({ error: "Não foi possível calcular o trajeto." });
+      }
+      return res.status(200).json(geometry);
+    } catch (error: any) {
+      if (error.message === "Nenhuma corrida encontrada com este ID.") {
+        return res.status(404).json({ error: error.message });
+      }
+      return res.status(500).json({ error: "Erro ao calcular geometria da rota." });
+    }
+  }
+
   async getMetrics(req: Request, res: Response): Promise<Response> {
     try {
       const rideId = Number(req.params.id);

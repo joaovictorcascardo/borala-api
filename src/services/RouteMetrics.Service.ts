@@ -36,6 +36,33 @@ async function getRoute(
   }
 }
 
+export async function getRouteGeometry(originAddress: string, destAddress: string) {
+  const [originCoords, destCoords] = await Promise.all([
+    geocode(originAddress),
+    geocode(destAddress),
+  ]);
+
+  if (!originCoords || !destCoords) return null;
+
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${originCoords.lon},${originCoords.lat};${destCoords.lon},${destCoords.lat}?overview=full&geometries=geojson`;
+    const res = await fetch(url);
+    const data = (await res.json()) as any;
+    if (data.code !== "Ok" || !data.routes?.length) return null;
+
+    const coords = data.routes[0].geometry.coordinates as [number, number][];
+    const polyline = coords.map(([lng, lat]) => [lat, lng]);
+
+    return {
+      origin: { lat: originCoords.lat, lng: originCoords.lon },
+      destination: { lat: destCoords.lat, lng: destCoords.lon },
+      polyline,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function getRouteMetrics(originAddress: string, destAddress: string) {
   const [originCoords, destCoords] = await Promise.all([
     geocode(originAddress),
